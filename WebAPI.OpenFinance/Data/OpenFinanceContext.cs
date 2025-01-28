@@ -13,5 +13,12 @@ namespace WebAPI.OpenFinance.Data
         public DbSet<BanksModel> Banks { get; set; }
         public DbSet<ClientsModel> Clients { get; set; }
         public DbSet<ConnectionsModel> Connections { get; set; }
+
+        public DbSet<ProductTypesModel> ProductsTypes { get; set; }
+
+        //Cash tables
+        public DbSet<CashModel> Cash { get; set; }
+        public DbSet<CashInfoModel> CashInfo { get; set; }
+
     }
 }
