@@ -42,20 +42,56 @@ namespace WebAPI.OpenFinance.Routes
                 totalAmount += cashTotal;
                 productTotals.Add(new { product = "Cash", total = cashTotal });
 
-                //Sum StockInfo for each connection
+                //Sum StockInfo for all connections
+                /*
+                 * Get all stockInfo for the clientConnections
+                 * Get the last_day_price of all stocks at stock table
+                 * Multiply the quantity * LastDayPrice
+                 * Sum the mutiplication result
+                 * Add the stockTotal to the totalAmount
+                 * Add the stockTotal to the productTotals as Stock
+                 */
+
+                /*
+                    select 
+                    sum(si.quantity * s.last_day_price) as total
+                    from stock_info si
+                    join stock s
+                    on si.stock_id = s.stock_id
+                    where connection_id in 
+                    (
+                        select
+                        connection_id
+                        from connections
+                        where client_id = 1
+                    )
+                */
+
+                var stockTotal = await context.StockInfo
+                    .Where(si => clientConnections.Contains(si.connectionId))
+                    .Join(context.Stock,
+                        si => si.stockId,
+                        s => s.stockId,
+                        (si, s) => si.quantity * s.lastDayPrice)
+                    .SumAsync();
+
+                totalAmount += stockTotal;
+                productTotals.Add(new { product = "Stock", total = stockTotal });
+
+
                 //Sum FundsInfo for each connection
 
 
                 //Return a JSON with the total for each product, the total amount for all products, the clientID and the timestamp
                 //Creating the JSON response
                 var response = new
-                {
-                    clientID = clientID,
-                    totalAmount = totalAmount,
-                    productTotals = productTotals,
-                    //Use UTC as timestamp ALWAYS. Front and Back
-                    timestamp = DateTime.UtcNow
-                };
+                    {
+                        clientID = clientID,
+                        totalAmount = totalAmount,
+                        productTotals = productTotals,
+                        //Use UTC as timestamp ALWAYS. Front and Back
+                        timestamp = DateTime.UtcNow
+                    };
                 //Returning the response
                 return Results.Ok(response);
             });
