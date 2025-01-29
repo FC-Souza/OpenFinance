@@ -20,5 +20,9 @@ namespace WebAPI.OpenFinance.Data
         public DbSet<CashModel> Cash { get; set; }
         public DbSet<CashInfoModel> CashInfo { get; set; }
 
+
+        //Stock tables
+        public DbSet<StockModel> Stock { get; set; }
+        public DbSet<StockInfoModel> StockInfo { get; set; }
     }
 }
