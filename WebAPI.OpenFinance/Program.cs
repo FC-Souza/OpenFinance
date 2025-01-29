@@ -36,6 +36,7 @@ namespace WebAPI.OpenFinance
             app.UseHttpsRedirection();
 
             app.BanksListRoutes();
+            app.ClientRoutes();
 
             app.Run();
         }
