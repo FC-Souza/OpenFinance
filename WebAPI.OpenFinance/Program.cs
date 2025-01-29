@@ -33,7 +33,7 @@ namespace WebAPI.OpenFinance
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.BanksListRoutes();
             app.ClientRoutes();

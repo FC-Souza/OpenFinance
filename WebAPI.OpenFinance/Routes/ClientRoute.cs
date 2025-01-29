@@ -13,7 +13,7 @@ namespace WebAPI.OpenFinance.Routes
 
             //GET /clients/{clientID}/totalAmount
             //Will return a JSON with the total for each product, the total amount for all products, the clientID and the timestamp
-            route.MapGet("/{clientID}/PortifolioTotalAmount", async (OpenFinanceContext context, int clientID) =>
+            route.MapGet("/{clientID}/PortfolioTotalAmount", async (OpenFinanceContext context, int clientID) =>
             {
                 //Will check the clientID in the Connections table and return the total amount of all products in the database for that connectionID
                 
