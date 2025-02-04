@@ -13,6 +13,7 @@ namespace WebAPI.OpenFinance.Data
         public DbSet<BanksModel> Banks { get; set; }
         public DbSet<ClientsModel> Clients { get; set; }
         public DbSet<ConnectionsModel> Connections { get; set; }
+        public DbSet<ClientCredentialModel> ClientCredentials { get; set; }
 
         public DbSet<ProductTypesModel> ProductsTypes { get; set; }
 
@@ -24,5 +25,15 @@ namespace WebAPI.OpenFinance.Data
         //Stock tables
         public DbSet<StockModel> Stock { get; set; }
         public DbSet<StockInfoModel> StockInfo { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            //Default value set to 3 for the remainingLoginAttempts
+            modelBuilder.Entity<ClientCredentialModel>(entity =>
+            {
+                entity.Property(e => e.remainingLoginAttempts)
+                      .HasDefaultValue(3);
+            });
+        }
     }
 }
