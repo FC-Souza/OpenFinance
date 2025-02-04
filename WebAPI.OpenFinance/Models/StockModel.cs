@@ -22,9 +22,10 @@ namespace WebAPI.OpenFinance.Models
         [Column("stock_id")]
         public int stockId { get; init; }
 
-        [ForeignKey("product_types")]
         [Column("product_id")]
         public int productId { get; set; }
+        [ForeignKey("product_types")]
+        public ProductTypesModel Product { get; set; }
 
         [Column("ticker")]
         public string ticker { get; set; }

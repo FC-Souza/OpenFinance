@@ -16,9 +16,10 @@ namespace WebAPI.OpenFinance.Models
         [Column("cash_id")]
         public int cashId { get; set; }
         
-        [ForeignKey("product_types")]
         [Column("product_id")]
         public int productId { get; set; }
+        [ForeignKey("product_types")]
+        public ProductTypesModel Product { get; set; }
 
         [Required]
         [Column("cash_description")]

@@ -19,13 +19,16 @@ namespace WebAPI.OpenFinance.Models
         [Column("stock_info_id")]
         public int stockInfoId { get; init; }
 
-        [ForeignKey("stock")]
         [Column("stock_id")]
         public int stockId { get; set; }
+        [ForeignKey("stockId")]
+        public StockModel Stock { get; set; }
 
         [Column("connection_id")]
         public int connectionId { get; set; }
-        
+        [ForeignKey("connectionId")]
+        public ConnectionsModel Connection { get; set; }
+
         [Column("quantity")]
         public int quantity { get; set; }
 
