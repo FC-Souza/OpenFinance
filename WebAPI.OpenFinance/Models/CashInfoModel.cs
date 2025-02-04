@@ -19,13 +19,15 @@ namespace WebAPI.OpenFinance.Models
         [Column("cash_info_id")]
         public int cashInfoId { get; set; }
 
-        [ForeignKey("cash")]
         [Column("cash_id")]
         public int cashId { get; set; }
+        [ForeignKey("cashId")]
+        public CashModel Cash { get; set; }
 
-        [ForeignKey("connections")]
         [Column("connection_id")]
         public int connectionId { get; set; }
+        [ForeignKey("connectionId")]
+        public ConnectionsModel Connection { get; set; }
 
         [Column("amount")]
         public decimal amount { get; set; }
