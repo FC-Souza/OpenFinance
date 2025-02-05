@@ -38,7 +38,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasKey("bankID");
 
-                    b.ToTable("banks");
+                    b.ToTable("banks", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.CashInfoModel", b =>
@@ -68,7 +68,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasIndex("connectionId");
 
-                    b.ToTable("cash_info");
+                    b.ToTable("cash_info", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.CashModel", b =>
@@ -96,7 +96,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasIndex("product_types");
 
-                    b.ToTable("cash");
+                    b.ToTable("cash", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.ClientCredentialModel", b =>
@@ -131,7 +131,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasIndex("clientId");
 
-                    b.ToTable("client_credential");
+                    b.ToTable("client_credential", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.ClientsModel", b =>
@@ -160,7 +160,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasKey("clientID");
 
-                    b.ToTable("clients");
+                    b.ToTable("clients", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.ConnectionsModel", b =>
@@ -190,7 +190,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasIndex("clientID");
 
-                    b.ToTable("connections");
+                    b.ToTable("connections", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.ProductTypesModel", b =>
@@ -214,7 +214,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasKey("productId");
 
-                    b.ToTable("product_types");
+                    b.ToTable("product_types", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.StockInfoModel", b =>
@@ -252,7 +252,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasIndex("stockId");
 
-                    b.ToTable("stock_info");
+                    b.ToTable("stock_info", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.StockModel", b =>
@@ -308,7 +308,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasIndex("product_types");
 
-                    b.ToTable("stock");
+                    b.ToTable("stock", (string)null);
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.CashInfoModel", b =>

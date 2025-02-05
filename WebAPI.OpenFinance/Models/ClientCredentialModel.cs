@@ -18,11 +18,11 @@ namespace WebAPI.OpenFinance.Models
 
         [Key]
         [Column("client_credential_id")]
-        public int clientCredentialId { get; init; }
+        public int clientCredentialID { get; init; }
 
         [Column("client_id")]
-        public int clientId { get; set; }
-        [ForeignKey("clientId")]
+        public int clientID { get; set; }
+        [ForeignKey("clientID")]
         public ClientsModel Client { get; set; }
 
         [Required]
