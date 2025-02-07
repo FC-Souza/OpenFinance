@@ -1,6 +1,7 @@
 ﻿using WebAPI.OpenFinance.Models;
 using WebAPI.OpenFinance.Data;
 using Microsoft.EntityFrameworkCore;
+using WebAPI.OpenFinance.Validations;
 
 namespace WebAPI.OpenFinance.Routes
 {
@@ -56,7 +57,39 @@ namespace WebAPI.OpenFinance.Routes
                 var name = signup.Name;
                 var address = signup.Address;
 
-                //Add the client to the clients table
+                //Input Validations using ValidationHelper
+                if (!ValidationHelper.IsValidEmail(email))
+                {
+                    return Results.BadRequest("Invalid Email");
+                }
+
+                if (!ValidationHelper.IsValidPassword(password))
+                {
+                    return Results.BadRequest("Invalid Password");
+                }
+
+                if (!ValidationHelper.IsValidName(name))
+                {
+                    return Results.BadRequest("Invalid Name");
+                }
+
+                if (!ValidationHelper.IsValidAddress(address))
+                {
+                    return Results.BadRequest("Invalid Address");
+                }
+
+                //Get the client with the email
+                var existingClient = await context.Clients
+                    .Where(c => c.clientEmail == email)
+                    .FirstOrDefaultAsync();
+
+                //Checkin if the email is in use. If has existingClient, the email is in use
+                if (existingClient != null)
+                {
+                    return Results.BadRequest("Email already in use");
+                }
+
+                //Add the NEW client to the clients table after the validations
                 var client = new ClientsModel
                 {
                     clientName = name,
@@ -66,16 +99,13 @@ namespace WebAPI.OpenFinance.Routes
                 context.Clients.Add(client);
                 await context.SaveChangesAsync();
 
-                //Get the client_id with the email
-                var clientID = await context.Clients
-                    .Where(c => c.clientEmail == email)
-                    .Select(c => c.clientID)
-                    .FirstOrDefaultAsync();
+                //Get the client_id from the new client added
+                var newClientID = client.clientID;
 
                 //Add the client to the client_credential table
                 var clientCredential = new ClientCredentialModel
                 {
-                    clientID = clientID,
+                    clientID = newClientID,
                     clientPassword = password
                 };
                 context.ClientCredentials.Add(clientCredential);
@@ -84,7 +114,7 @@ namespace WebAPI.OpenFinance.Routes
                 //Return the client_id and client_name
                 var signupResponse = new
                 {
-                    clientID = clientID,
+                    clientID = newClientID,
                     clientName = name
                 };
 
