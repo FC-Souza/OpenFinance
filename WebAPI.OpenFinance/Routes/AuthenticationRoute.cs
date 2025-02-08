@@ -27,6 +27,13 @@ namespace WebAPI.OpenFinance.Routes
                     .Where(c => c.clientEmail == email)
                     .FirstOrDefaultAsync();
 
+                //Check if the cliend is registered
+                if (client == null)
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+
                 //Check the password received with the password at client_crendential
                 var clientCredential = await context.ClientCredentials
                     .Where(c => c.clientID == client.clientID && c.clientPassword == password)
