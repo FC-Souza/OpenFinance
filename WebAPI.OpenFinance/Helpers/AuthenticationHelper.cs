@@ -48,8 +48,12 @@ namespace WebAPI.OpenFinance.Helpers
                 .Where(c => c.clientID == client && c.clientPassword == password)
                 .FirstOrDefaultAsync();
 
+            //Wrogn password
             if (credential == null)
             {
+                //Decrease the remainingLoginAttempts
+                await DecreaseRemainingLoginAttempts(context, client);
+
                 return false;
             }
 
@@ -100,10 +104,74 @@ namespace WebAPI.OpenFinance.Helpers
         {
             var clientCredential = await GetClientCredentialByClientID(context, clientID);
             
-            clientCredential.lastLogin = DateTime.Now;
+            clientCredential.lastLogin = DateTime.UtcNow;
+
             clientCredential.remainingLoginAttempts = 3;
+
             await context.SaveChangesAsync();
         }
+
+        //Decrease remainingLoginAttempts
+        public static async Task DecreaseRemainingLoginAttempts(OpenFinanceContext context, int clientID)
+        {
+            var clientCredential = await GetClientCredentialByClientID(context, clientID);
+
+            //Decrease the remainingLoginAttempts
+            clientCredential.remainingLoginAttempts--;
+
+            //If the remainingLoginAttempts is 0, block the client
+            if (clientCredential.remainingLoginAttempts <= 0)
+            {
+                await BlockClient(context, clientID);
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        //Check if the client is blocked
+        public static async Task<bool> CheckIfClientIsBlocked(OpenFinanceContext context, int clientID)
+        {
+            var clientCredential = await GetClientCredentialByClientID(context, clientID);
+
+            if ((clientCredential.isBlocked) && clientCredential.blockedUntil > DateTime.UtcNow)
+            {
+                return true;
+            }
+
+            //Unblock the client
+            await UnblockClient(context, clientID);
+
+            return false;
+        }
+
+        //Block the client
+        public static async Task BlockClient(OpenFinanceContext context, int clientID)
+        {
+            var clientCredential = await GetClientCredentialByClientID(context, clientID);
+
+            //Blocking
+            clientCredential.isBlocked = true;
+
+            //Blocking for 5 minutes
+            clientCredential.blockedUntil = DateTime.UtcNow.AddMinutes(5);
+
+            await context.SaveChangesAsync();
+        }
+
+        //Unblock the client
+        public static async Task UnblockClient(OpenFinanceContext context, int clientID)
+        {
+            var clientCredential = await GetClientCredentialByClientID(context, clientID);
+
+            //Unblocking
+            clientCredential.isBlocked = false;
+
+            //Removing the blockedUntil
+            clientCredential.blockedUntil = null;
+
+            await context.SaveChangesAsync();
+        }
+
 
 
     }

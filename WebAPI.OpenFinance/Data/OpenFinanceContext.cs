@@ -34,6 +34,13 @@ namespace WebAPI.OpenFinance.Data
                 entity.Property(e => e.remainingLoginAttempts)
                       .HasDefaultValue(3);
             });
+
+            //Default value set as false for the isBlocked
+            modelBuilder.Entity<ClientCredentialModel>(entity =>
+            {
+                entity.Property(e => e.isBlocked)
+                      .HasDefaultValue(false);
+            });
         }
     }
 }

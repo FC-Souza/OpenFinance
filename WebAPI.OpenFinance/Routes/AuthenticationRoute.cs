@@ -50,6 +50,14 @@ namespace WebAPI.OpenFinance.Routes
                     return Results.BadRequest("Incorrect Password");
                 }
 
+                //Check if the client is blocked
+                //if (clientCredential.remainingLoginAttempts == 0)
+                if (await AuthenticationHelper.CheckIfClientIsBlocked(context, client.clientID))
+                {
+                    return Results.BadRequest("Client is Blocked");
+                }
+
+
                 //Update the last_login and remaining_login_attempts
                 await AuthenticationHelper.UpdateLastLogin(context, client.clientID);
 
@@ -107,29 +115,10 @@ namespace WebAPI.OpenFinance.Routes
                 }
 
                 //Add the NEW client to the clients table after the validations
-                //var client = new ClientsModel
-                //{
-                //    clientName = name,
-                //    clientEmail = email,
-                //    clientAddress = address
-                //};
-                //context.Clients.Add(client);
-                //await context.SaveChangesAsync();
                 var newClientID = await AuthenticationHelper.RegisterClient(context, name, email, address);
 
 
-
-                //Get the client_id from the new client added
-                //var newClientID = client.clientID;
-
-                ////Add the client to the client_credential table
-                //var clientCredential = new ClientCredentialModel
-                //{
-                //    clientID = newClientID,
-                //    clientPassword = password
-                //};
-                //context.ClientCredentials.Add(clientCredential);
-                //await context.SaveChangesAsync();
+                //Add the client to the client_credential table
                 await AuthenticationHelper.RegisterClientCredential(context, newClientID, password);
 
                 //Return the client_id and client_name

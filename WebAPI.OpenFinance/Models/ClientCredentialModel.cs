@@ -36,6 +36,13 @@ namespace WebAPI.OpenFinance.Models
         [Column("remaining_login_attempts")]
         public int remainingLoginAttempts { get; set; }
 
+        //Default value set at OnModelCreating
+        [Column("is_blocked")]
+        public bool isBlocked { get; set; }
+
+        [Column("blocked_until")]
+        public DateTime? blockedUntil { get; set; }
+
 
     }
 }
