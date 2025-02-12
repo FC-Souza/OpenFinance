@@ -96,6 +96,61 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok(response);
             });
 
+            //GET /Clients/{clientID}/AssetsSummary
+            /*
+             * Receive the clientID
+             * Check all the connections for the clientID
+             * Check all the products for al the connections from the clientID
+             * Calculate the total amount for each product
+             * Calculate the % of representationn of each product
+             * Return a JSON with the number of products, total amount portifolio, total amount for each product, the % of representation of each product, the clientID and the timestamp
+             */
+            route.MapGet("/{clientID}/AssetsSummary", async (OpenFinanceContext context, int clientID) =>
+            {
+                //Get all connections for the clientID
+                var clientConnections = await context.Connections
+                    .Where(c => c.clientID == clientID)
+                    .Select(c => c.connectionID)
+                    .ToListAsync();
+
+                //Create s list for product details
+                var productDetails = new List<object>();
+                decimal totalAmount = 0;
+                int numProducts = 0;
+
+                //Sum StockInfo for all connections
+                var stockTotal = await context.StockInfo
+                    .Where(si => clientConnections.Contains(si.connectionId))
+                    .Join(context.Stock,
+                        si => si.stockId,
+                        s => s.stockId,
+                        (si, s) => si.quantity * s.lastDayPrice)
+                    .SumAsync();
+
+                totalAmount += stockTotal;
+
+                //Increase numProducts if stockTotal > 0
+                if (stockTotal > 0)
+                {
+                    numProducts++;
+                }
+
+                //Calculate the % of representation of all products and add to the productDetails
+                productDetails.Add(new { product = "Stock", total = stockTotal, percentage = (stockTotal / totalAmount) * 100 });
+
+                //JSON response
+                var response = new
+                {
+                    clientID = clientID,
+                    numProducts = numProducts,
+                    totalAmount = totalAmount,
+                    productDetails = productDetails,
+                    timestamp = DateTime.UtcNow
+                };
+
+                return Results.Ok(response);
+
+            });
         }
     }
 }
