@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace WebAPI.OpenFinance.Validations
+namespace WebAPI.OpenFinance.Helpers
 {
     //Internal, because the class will be used only in this project
     internal static class ValidationHelper
