@@ -1,7 +1,9 @@
 ﻿using WebAPI.OpenFinance.Models;
 using WebAPI.OpenFinance.Data;
 using Microsoft.EntityFrameworkCore;
-using WebAPI.OpenFinance.Validations;
+using WebAPI.OpenFinance.Helpers;
+using Microsoft.AspNetCore.SignalR;
+using System.Net.Http.Headers;
 
 namespace WebAPI.OpenFinance.Routes
 {
@@ -23,14 +25,41 @@ namespace WebAPI.OpenFinance.Routes
                 var password = login.Password;
 
                 //Get the client_id with the email
-                var client = await context.Clients
-                    .Where(c => c.clientEmail == email)
-                    .FirstOrDefaultAsync();
+                //var client = await context.Clients
+                //    .Where(c => c.clientEmail == email)
+                //    .FirstOrDefaultAsync();
+                var client = await AuthenticationHelper.GetClientByEmail(context, email);
+
+                //Check if the cliend is registered
+                //if (client == null)
+                if (!await AuthenticationHelper.CheckEmailExists(context, email))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
 
                 //Check the password received with the password at client_crendential
-                var clientCredential = await context.ClientCredentials
-                    .Where(c => c.clientID == client.clientID && c.clientPassword == password)
-                    .FirstOrDefaultAsync();
+                //var clientCredential = await context.ClientCredentials
+                //    .Where(c => c.clientID == client.clientID && c.clientPassword == password)
+                //    .FirstOrDefaultAsync();
+                //bool isPasswordCorrect = await AuthenticationHelper.CheckPassword(context, client.clientID, password);
+
+                //if (!isPasswordCorrect)
+                if (!await AuthenticationHelper.CheckPassword(context, client.clientID, password))
+                {
+                    return Results.BadRequest("Incorrect Password");
+                }
+
+                //Check if the client is blocked
+                //if (clientCredential.remainingLoginAttempts == 0)
+                if (await AuthenticationHelper.CheckIfClientIsBlocked(context, client.clientID))
+                {
+                    return Results.BadRequest("Client is Blocked");
+                }
+
+
+                //Update the last_login and remaining_login_attempts
+                await AuthenticationHelper.UpdateLastLogin(context, client.clientID);
 
                 //Return the client_id and client_name
                 var loginResponse = new
@@ -78,38 +107,19 @@ namespace WebAPI.OpenFinance.Routes
                     return Results.BadRequest("Invalid Address");
                 }
 
-                //Get the client with the email
-                var existingClient = await context.Clients
-                    .Where(c => c.clientEmail == email)
-                    .FirstOrDefaultAsync();
-
                 //Checkin if the email is in use. If has existingClient, the email is in use
-                if (existingClient != null)
+                //if (existingClient != null)
+                if (await AuthenticationHelper.CheckEmailExists(context, email))
                 {
                     return Results.BadRequest("Email already in use");
                 }
 
                 //Add the NEW client to the clients table after the validations
-                var client = new ClientsModel
-                {
-                    clientName = name,
-                    clientEmail = email,
-                    clientAddress = address
-                };
-                context.Clients.Add(client);
-                await context.SaveChangesAsync();
+                var newClientID = await AuthenticationHelper.RegisterClient(context, name, email, address);
 
-                //Get the client_id from the new client added
-                var newClientID = client.clientID;
 
                 //Add the client to the client_credential table
-                var clientCredential = new ClientCredentialModel
-                {
-                    clientID = newClientID,
-                    clientPassword = password
-                };
-                context.ClientCredentials.Add(clientCredential);
-                await context.SaveChangesAsync();
+                await AuthenticationHelper.RegisterClientCredential(context, newClientID, password);
 
                 //Return the client_id and client_name
                 var signupResponse = new
