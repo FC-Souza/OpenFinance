@@ -99,11 +99,6 @@ namespace WebAPI.OpenFinance.Routes
                     return Results.BadRequest("Invalid Address");
                 }
 
-                //Get the client with the email
-                //var existingClient = await context.Clients
-                //    .Where(c => c.clientEmail == email)
-                //    .FirstOrDefaultAsync();
-
                 //Checkin if the email is in use. If has existingClient, the email is in use
                 //if (existingClient != null)
                 if (await AuthenticationHelper.CheckEmailExists(context, email))
