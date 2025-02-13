@@ -47,6 +47,20 @@ namespace WebAPI.OpenFinance.Helpers
             return stockTotal;
         }
 
+        //Get mutual fund total amount for the clientID
+        public static async Task<decimal> GetClientMutualFundTotalAmount(OpenFinanceContext context, int clientID)
+        {
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+            var mutualFundTotal = await context.MutualFundInfo
+                    .Where(mf => clientConnections.Contains(mf.ConnectionID))
+                    .Join(context.MutualFund,
+                        mf => mf.MFID,
+                        m => m.MFID,
+                        (mf, m) => mf.QuantityShares * m.MFNAV)
+                    .SumAsync();
+            return mutualFundTotal;
+        }
+
         //Calculate the percentage for each product
         public static void CalculatePercentageForEachProduct(List<ProductDetails> productDetails)
         {
@@ -63,7 +77,9 @@ namespace WebAPI.OpenFinance.Helpers
             {
                 if (product.ProdTotal > 0)
                 {
-                    product.PortfolioPercentage = (product.ProdTotal / totalAmount) * 100;
+                    //product.PortfolioPercentage = (product.ProdTotal / totalAmount) * 100;
+                    //Round to 2 decimal
+                    product.PortfolioPercentage = Math.Round((product.ProdTotal / totalAmount) * 100, 2);
                 }
                 else
                 {

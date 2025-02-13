@@ -26,6 +26,10 @@ namespace WebAPI.OpenFinance.Data
         public DbSet<StockModel> Stock { get; set; }
         public DbSet<StockInfoModel> StockInfo { get; set; }
 
+        //Mutual Funds tables
+        public DbSet<MutualFundModel> MutualFund { get; set; }
+        public DbSet<MutualFundInfoModel> MutualFundInfo { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Default value set to 3 for the remainingLoginAttempts
