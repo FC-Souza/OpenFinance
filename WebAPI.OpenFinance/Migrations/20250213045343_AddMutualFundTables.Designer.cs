@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebAPI.OpenFinance.Data;
@@ -11,9 +12,11 @@ using WebAPI.OpenFinance.Data;
 namespace WebAPI.OpenFinance.Migrations
 {
     [DbContext(typeof(OpenFinanceContext))]
-    partial class OpenFinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20250213045343_AddMutualFundTables")]
+    partial class AddMutualFundTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -293,12 +296,7 @@ namespace WebAPI.OpenFinance.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("product_id");
 
-                    b.Property<int?>("product_types")
-                        .HasColumnType("integer");
-
                     b.HasKey("MFID");
-
-                    b.HasIndex("product_types");
 
                     b.ToTable("mutual_fund");
                 });
@@ -496,15 +494,6 @@ namespace WebAPI.OpenFinance.Migrations
                     b.Navigation("Connection");
 
                     b.Navigation("MutualFund");
-                });
-
-            modelBuilder.Entity("WebAPI.OpenFinance.Models.MutualFundModel", b =>
-                {
-                    b.HasOne("WebAPI.OpenFinance.Models.ProductTypesModel", "Product")
-                        .WithMany()
-                        .HasForeignKey("product_types");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.StockInfoModel", b =>

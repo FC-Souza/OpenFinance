@@ -9,7 +9,7 @@ namespace WebAPI.OpenFinance.Models
         /*
          * table: stock_info
          * stock_id (PK, int, not null)
-         * connection_id (FK, int, not null)
+         * connection_id (FK, int, not null)    
          * quantity (int, not null)
          * average_price (decimal(15,2), not null)
          * last_updated (datetime, not null)
