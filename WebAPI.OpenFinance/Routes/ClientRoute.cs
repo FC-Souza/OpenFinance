@@ -1,6 +1,7 @@
 ﻿using WebAPI.OpenFinance.Models;
 using WebAPI.OpenFinance.Data;
 using Microsoft.EntityFrameworkCore;
+using WebAPI.OpenFinance.Helpers;
 
 namespace WebAPI.OpenFinance.Routes
 {
@@ -96,6 +97,94 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok(response);
             });
 
+
+            //GET /Clients/{clientID}/AssetsSummary
+            /*
+             * Receive the clientID
+             * Check all the connections for the clientID
+             * Check all the products for al the connections from the clientID
+             * Calculate the total amount for each product
+             * Calculate the % of representationn of each product
+             * Return a JSON with the number of products, total amount portifolio, total amount for each product, the % of representation of each product, the clientID and the timestamp
+             */
+            route.MapGet("/{clientID}/AssetsSummary", async (OpenFinanceContext context, int clientID) =>
+            {
+                //Create s list for product details
+                //var productDetails = new List<object>();
+                var productDetail = new List<ProductDetails>();
+                decimal totalAmount = 0;
+                int numProducts = 0;
+
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Check if the client has any connections
+                if (!await ClientHelper.CheckClientConnections(context, clientID))
+                {
+                    return Results.BadRequest("Client has no connections");
+                }
+
+                //Get all connections for the clientID
+                //var clientConnections = await context.Connections
+                //    .Where(c => c.clientID == clientID)
+                //    .Select(c => c.connectionID)
+                //    .ToListAsync();
+                var clientConnections = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
+
+                //Sum StockInfo for all connections
+                //var stockTotal = await context.StockInfo
+                //    .Where(si => clientConnections.Contains(si.connectionId))
+                //    .Join(context.Stock,
+                //        si => si.stockId,
+                //        s => s.stockId,
+                //        (si, s) => si.quantity * s.lastDayPrice)
+                //    .SumAsync();
+                var stockTotal = await ClientHelper.GetClientStockTotalAmount(context, clientID);
+
+                //Add the stock details to the productDetails list
+                productDetail.Add(new ProductDetails { ProductName = "Stock", ProdTotal = stockTotal });
+
+                //totalAmount += stockTotal;
+
+                //Increase numProducts if stockTotal > 0
+                //if (stockTotal > 0)
+                //{
+                //    numProducts++;
+                //}
+                //ClientHelper.IncreaseNumProducts(stockTotal, ref numProducts);
+
+                //Calculate the % of representation of all products and add to the productDetails
+                //productDetail.Add(new { product = "Stock", total = stockTotal, percentage = (stockTotal / totalAmount) * 100 });
+                ClientHelper.CalculatePercentageForEachProduct(productDetail);
+
+                //Get the number of products
+                numProducts = ClientHelper.GetNumProducts(productDetail);
+
+                //Get the total amount
+                totalAmount = ClientHelper.CalculateTotalAmount(productDetail);
+
+                //Check if the client has any products and return a message if not
+                if (numProducts == 0)
+                {
+                    return Results.BadRequest("Client has no products");
+                }
+
+                //JSON response
+                var response = new
+                {
+                    clientID = clientID,
+                    numProducts = numProducts,
+                    totalAmount = totalAmount,
+                    productDetails = productDetail,
+                    timestamp = DateTime.UtcNow
+                };
+
+                return Results.Ok(response);
+
+            });
         }
     }
 }
