@@ -79,6 +79,16 @@ namespace WebAPI.OpenFinance.Routes
                 totalAmount += stockTotal;
                 productTotals.Add(new { product = "Stock", total = stockTotal });
 
+                var mutualFundTotal = await context.MutualFundInfo
+                    .Where(mf => clientConnections.Contains(mf.ConnectionID))
+                    .Join(context.MutualFund,
+                        mf => mf.MFID,
+                        m => m.MFID,
+                        (mf, m) => mf.QuantityShares * m.MFNAV)
+                    .SumAsync();
+                totalAmount += mutualFundTotal;
+                productTotals.Add(new { product = "Mutual Fund", total = mutualFundTotal });
+
 
                 //Sum FundsInfo for each connection
 
@@ -128,36 +138,19 @@ namespace WebAPI.OpenFinance.Routes
                 }
 
                 //Get all connections for the clientID
-                //var clientConnections = await context.Connections
-                //    .Where(c => c.clientID == clientID)
-                //    .Select(c => c.connectionID)
-                //    .ToListAsync();
                 var clientConnections = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
 
-                //Sum StockInfo for all connections
-                //var stockTotal = await context.StockInfo
-                //    .Where(si => clientConnections.Contains(si.connectionId))
-                //    .Join(context.Stock,
-                //        si => si.stockId,
-                //        s => s.stockId,
-                //        (si, s) => si.quantity * s.lastDayPrice)
-                //    .SumAsync();
+                //STOCK
                 var stockTotal = await ClientHelper.GetClientStockTotalAmount(context, clientID);
 
                 //Add the stock details to the productDetails list
                 productDetail.Add(new ProductDetails { ProductName = "Stock", ProdTotal = stockTotal });
 
-                //totalAmount += stockTotal;
-
-                //Increase numProducts if stockTotal > 0
-                //if (stockTotal > 0)
-                //{
-                //    numProducts++;
-                //}
-                //ClientHelper.IncreaseNumProducts(stockTotal, ref numProducts);
+                //MUTAL FUND
+                var mutualFundTotal = await ClientHelper.GetClientMutualFundTotalAmount(context, clientID);
+                productDetail.Add(new ProductDetails { ProductName = "Mutual Fund", ProdTotal = mutualFundTotal });
 
                 //Calculate the % of representation of all products and add to the productDetails
-                //productDetail.Add(new { product = "Stock", total = stockTotal, percentage = (stockTotal / totalAmount) * 100 });
                 ClientHelper.CalculatePercentageForEachProduct(productDetail);
 
                 //Get the number of products
