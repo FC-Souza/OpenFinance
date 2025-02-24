@@ -2,6 +2,7 @@
 using WebAPI.OpenFinance.Data;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.OpenFinance.Helpers;
+using Microsoft.AspNetCore.SignalR;
 
 namespace WebAPI.OpenFinance.Routes
 {
@@ -22,14 +23,19 @@ namespace WebAPI.OpenFinance.Routes
                 
                 //Get all conectionId for the clientID
                 //LINQ -> WHERE before SELECT
-                var clientConnections = await context.Connections
-                    .Where(c => c.clientID == clientID)
-                    .Select(c => c.connectionID)
-                    .ToListAsync();
+                var clientConnections = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
 
                 //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
 
                 //check if the client has any connections
+                if (!await ClientHelper.CheckClientConnections(context, clientID))
+                {
+                    return Results.BadRequest("Client has no connections");
+                }
 
                 //Get the productTotal for each products
                 //Create a list of ProductTotal
@@ -37,11 +43,10 @@ namespace WebAPI.OpenFinance.Routes
                 decimal totalAmount = 0;
 
                 //Sum CashInfo for each connection
-                var cashTotal = await context.CashInfo
-                    .Where(c => clientConnections.Contains(c.connectionId))
-                    .SumAsync(c => c.amount);
+                var cashTotal = await ClientHelper.GetClientCashTotalAmount(context, clientID);
+
+                //Add the cashTotal to the totalAmount
                 totalAmount += cashTotal;
-                productTotals.Add(new { product = "Cash", total = cashTotal });
 
                 //Sum StockInfo for all connections
                 /*
@@ -67,28 +72,32 @@ namespace WebAPI.OpenFinance.Routes
                         where client_id = 1
                     )
                 */
+                //var stockTotal = await context.StockInfo
+                //    .Where(si => clientConnections.Contains(si.connectionId))
+                //    .Join(context.Stock,
+                //        si => si.stockId,
+                //        s => s.stockId,
+                //        (si, s) => si.quantity * s.lastDayPrice)
+                //    .SumAsync();
 
-                var stockTotal = await context.StockInfo
-                    .Where(si => clientConnections.Contains(si.connectionId))
-                    .Join(context.Stock,
-                        si => si.stockId,
-                        s => s.stockId,
-                        (si, s) => si.quantity * s.lastDayPrice)
-                    .SumAsync();
+                var stockTotal = await ClientHelper.GetClienStockTotalAmount(context, clientID);
 
                 totalAmount += stockTotal;
                 productTotals.Add(new { product = "Stock", total = stockTotal });
 
-                var mutualFundTotal = await context.MutualFundInfo
-                    .Where(mf => clientConnections.Contains(mf.ConnectionID))
-                    .Join(context.MutualFund,
-                        mf => mf.MFID,
-                        m => m.MFID,
-                        (mf, m) => mf.QuantityShares * m.MFNAV)
-                    .SumAsync();
+                //var mutualFundTotal = await context.MutualFundInfo
+                //    .Where(mf => clientConnections.Contains(mf.ConnectionID))
+                //    .Join(context.MutualFund,
+                //        mf => mf.MFID,
+                //        m => m.MFID,
+                //        (mf, m) => mf.QuantityShares * m.MFNAV)
+                //    .SumAsync();
+                //totalAmount += mutualFundTotal;
+                //productTotals.Add(new { product = "Mutual Fund", total = mutualFundTotal });
+
+                var mutualFundTotal = await ClientHelper.GetClientMutualFundTotalAmount(context, clientID);
                 totalAmount += mutualFundTotal;
                 productTotals.Add(new { product = "Mutual Fund", total = mutualFundTotal });
-
 
                 //Sum FundsInfo for each connection
 
@@ -141,7 +150,7 @@ namespace WebAPI.OpenFinance.Routes
                 var clientConnections = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
 
                 //STOCK
-                var stockTotal = await ClientHelper.GetClientStockTotalAmount(context, clientID);
+                var stockTotal = await ClientHelper.GetClienStockTotalAmount(context, clientID);
 
                 //Add the stock details to the productDetails list
                 productDetail.Add(new ProductDetails { ProductName = "Stock", ProdTotal = stockTotal });
