@@ -235,19 +235,6 @@ namespace WebAPI.OpenFinance.Routes
                     connectionDetail.Add(connectionDetails);
                 }
 
-                //Get the details for all disabled connections
-                var disabledConnections = await ClientHelper.GetDisableClientConnectionsByClientID(context, clientID);
-                
-                //Loop through all disabled connections to get the connection details
-                foreach (var connection in disabledConnections)
-                {
-                    //Get the connection details
-                    var connectionDetails = await ClientHelper.GetDisablebConnectionDetails(context, connection);
-
-                    //Add the connection details to the connectionDetail list
-                    connectionDetail.Add(connectionDetails);
-                }
-
                 //Calculate the percentage for each connection
                 ClientHelper.CalculatePercentageForEachConnection(connectionDetail, totalAmount);
 
@@ -263,43 +250,6 @@ namespace WebAPI.OpenFinance.Routes
 
                 return Results.Ok(response);
             });
-
-            //POST /Clients/Connections
-            /*
-             * Receive the JSON with the clientID, bankID and accountNumber
-             * Check if the client exists
-             * Check if the connection already exists
-             * Add the new connection
-             * Return sucess message
-             */
-            route.MapPost("/Connections", async (OpenFinanceContext context, Connection connection) =>
-            {
-                //Check if the client exists
-                if (!await ClientHelper.CheckClientExists(context, connection.ClientID))
-                {
-                    return Results.BadRequest("Client not found");
-                }
-
-                //Check if the connection already exists
-                if (await ClientHelper.CheckConnectionExists(context, connection.ClientID, connection.BankID, connection.AccountNumber))
-                {
-                    return Results.BadRequest("Connection already exists. Check if the connection is disabled");
-                }
-
-                //Add the new connection
-                await ClientHelper.AddNewConnection(context, connection.ClientID, connection.BankID, connection.AccountNumber);
-
-                //Return success message
-                return Results.Ok("Connection added successfully");
-            });
         }
-    }
-
-    //Class to receive the JSON from Add Connection
-    public class Connection
-    {
-        public int ClientID { get; set; }
-        public int BankID { get; set; }
-        public int AccountNumber { get; set; }
     }
 }

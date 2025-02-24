@@ -7,6 +7,5 @@
         public int AccountNumber { get; set; }
         public decimal ConnectionAmount { get; set; }
         public decimal ConnectionPercentage { get; set; }
-        public bool IsActive { get; set; }
     }
 }
