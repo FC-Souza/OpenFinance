@@ -31,36 +31,6 @@ namespace WebAPI.OpenFinance.Helpers
             return await context.Connections.AnyAsync(c => c.clientID == clientID);
         }
 
-        //Get stock total amount for the clientID
-        public static async Task<decimal> GetClientStockTotalAmount(OpenFinanceContext context, int clientID)
-        {
-            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
-
-            var stockTotal = await context.StockInfo
-                    .Where(si => clientConnections.Contains(si.connectionId))
-                    .Join(context.Stock,
-                        si => si.stockId,
-                        s => s.stockId,
-                        (si, s) => si.quantity * s.lastDayPrice)
-                    .SumAsync();
-
-            return stockTotal;
-        }
-
-        //Get mutual fund total amount for the clientID
-        public static async Task<decimal> GetClientMutualFundTotalAmount(OpenFinanceContext context, int clientID)
-        {
-            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
-            var mutualFundTotal = await context.MutualFundInfo
-                    .Where(mf => clientConnections.Contains(mf.ConnectionID))
-                    .Join(context.MutualFund,
-                        mf => mf.MFID,
-                        m => m.MFID,
-                        (mf, m) => mf.QuantityShares * m.MFNAV)
-                    .SumAsync();
-            return mutualFundTotal;
-        }
-
         //Calculate the percentage for each product
         public static void CalculatePercentageForEachProduct(List<ProductDetails> productDetails)
         {
@@ -111,6 +81,48 @@ namespace WebAPI.OpenFinance.Helpers
                 }
             }
             return numProducts;
+        }
+
+        //Get the total amount for Cash
+        public static async Task<decimal> GetClientCashTotalAmount(OpenFinanceContext context, int clientID)
+        {
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+
+            var cashTotal = await context.CashInfo
+                .Where(c => clientConnections.Contains(c.connectionId))
+                .SumAsync(c => c.amount);
+
+            return cashTotal;
+        }
+
+        //Get the total amount for Stock 
+        public static async Task<decimal> GetClienStockTotalAmount(OpenFinanceContext context, int clientID)
+        {
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+
+            var stockTotal = await context.StockInfo
+                                .Where(si => clientConnections.Contains(si.connectionId))
+                                .Join(context.Stock,
+                                    si => si.stockId,
+                                    s => s.stockId,
+                                    (si, s) => si.quantity * s.lastDayPrice)
+                                .SumAsync();
+
+            return stockTotal;
+        }
+
+        //Get the total amount for Mutual Fund
+        public static async Task<decimal> GetClientMutualFundTotalAmount(OpenFinanceContext context, int clientID)
+        {
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+            var mutualFundTotal = await context.MutualFundInfo
+                                    .Where(mf => clientConnections.Contains(mf.ConnectionID))
+                                    .Join(context.MutualFund,
+                                        mf => mf.MFID,
+                                        m => m.MFID,
+                                        (mf, m) => mf.QuantityShares * m.MFNAV)
+                                    .SumAsync();
+            return mutualFundTotal;
         }
 
     }
