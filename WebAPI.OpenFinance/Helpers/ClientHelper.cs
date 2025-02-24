@@ -125,5 +125,109 @@ namespace WebAPI.OpenFinance.Helpers
             return mutualFundTotal;
         }
 
+        //Get the total amount of all the products for a ClientID
+        public static async Task<decimal> GetClientTotalAmount(OpenFinanceContext context, int clientID)
+        {
+            var cashTotal = await GetClientCashTotalAmount(context, clientID);
+            var stockTotal = await GetClienStockTotalAmount(context, clientID);
+            var mutualFundTotal = await GetClientMutualFundTotalAmount(context, clientID);
+
+            var totalAmount = cashTotal + stockTotal + mutualFundTotal;
+            return totalAmount;
+        }
+
+        //Get the total amount for all the products for a ConnectionID
+        public static async Task<decimal> GetConnectionTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var cashTotal = await GetConnectionCashTotalAmount(context, connectionID);
+
+            var stockTotal = await GetConnectionStockTotalAmount(context, connectionID);
+
+            var mutualFundTotal = await GetConnectionMutualFundTotalAmount(context, connectionID);
+
+            var totalAmount = cashTotal + stockTotal + mutualFundTotal;
+            return totalAmount;
+        }
+
+        //Get the total amount for cash for a ConnectionID
+        public static async Task<decimal> GetConnectionCashTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var cashTotal = await context.CashInfo
+                .Where(c => c.connectionId == connectionID)
+                .SumAsync(c => c.amount);
+            return cashTotal;
+        }
+
+        //Get the total amount for stock for a ConnectionID
+        public static async Task<decimal> GetConnectionStockTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var stockTotal = await context.StockInfo
+                                .Where(si => si.connectionId == connectionID)
+                                .Join(context.Stock,
+                                    si => si.stockId,
+                                    s => s.stockId,
+                                    (si, s) => si.quantity * s.lastDayPrice)
+                                .SumAsync();
+            return stockTotal;
+        }
+
+        //Get the total amount for mutual fund for a ConnectionID
+        public static async Task<decimal> GetConnectionMutualFundTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var mutualFundTotal = await context.MutualFundInfo
+                                    .Where(mf => mf.ConnectionID == connectionID)
+                                    .Join(context.MutualFund,
+                                        mf => mf.MFID,
+                                        m => m.MFID,
+                                        (mf, m) => mf.QuantityShares * m.MFNAV)
+                                    .SumAsync();
+            return mutualFundTotal;
+        }
+
+        //Get the connection details for a connectionID
+        public static async Task<ConnectionDetails> GetConnectionDetails(OpenFinanceContext context, int connectionID)
+        {
+            //Select * from Connections where connectionID = connectionID
+            var connection = await context.Connections
+                .FirstOrDefaultAsync(c => c.connectionID == connectionID);
+
+            var connectionDetail = new ConnectionDetails
+            {
+                BankName = await GetBankName(context, connection.bankID),
+                BankID = connection.bankID,
+                AccountNumber = connection.accountNumber,
+                ConnectionAmount = await GetConnectionTotalAmount(context, connectionID),
+                ConnectionPercentage = 0
+            };
+            return connectionDetail;
+        }
+
+        //Get bank name for a bankID
+        public static async Task<string> GetBankName(OpenFinanceContext context, int bankID)
+        {
+            var bankName = await context.Banks
+                .Where(b => b.bankID == bankID)
+                .Select(b => b.bankName)
+                .FirstOrDefaultAsync();
+            return bankName;
+        }
+
+        //Get the percentage for each connection
+        public static void CalculatePercentageForEachConnection(List<ConnectionDetails> connectionDetails, decimal totalAmount)
+        {
+            foreach (var connection in connectionDetails)
+            {
+                if (connection.ConnectionAmount > 0)
+                {
+                    connection.ConnectionPercentage = Math.Round((connection.ConnectionAmount / totalAmount) * 100, 2);
+                }
+                else
+                {
+                    connection.ConnectionPercentage = 0;
+                }
+            }
+        }
+
+
     }
 }
