@@ -263,6 +263,30 @@ namespace WebAPI.OpenFinance.Helpers
             return disableClientConnections;
         }
 
+        //Check if the connection exists
+        public static async Task<bool> CheckConnectionExists(OpenFinanceContext context, int clientID,int bankID, int accountNumber)
+        {
+            //Select * from connections where client_id = clientID and bank_id = bankID and account_number = accountNumber
+            return await context.Connections
+                .AnyAsync(c => c.clientID == clientID && c.bankID == bankID && c.accountNumber == accountNumber);
+        }
+
+        //Add a new connection
+        public static async Task AddNewConnection(OpenFinanceContext context, int clientID, int bankID, int accountNumber)
+        {
+            var newConnection = new ConnectionsModel
+            {
+                clientID = clientID,
+                bankID = bankID,
+                accountNumber = accountNumber,
+                isActive = true
+            };
+
+            context.Connections.Add(newConnection);
+
+            await context.SaveChangesAsync();
+        }
+
 
     }
 }
