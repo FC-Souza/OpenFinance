@@ -202,6 +202,7 @@ namespace WebAPI.OpenFinance.Routes
             {
                 //Create a list for connection details
                 var connectionDetail = new List<ConnectionDetails>();
+                var numConnections = 0;
 
                 //Check if the client exists
                 if (!await ClientHelper.CheckClientExists(context, clientID))
@@ -222,21 +223,28 @@ namespace WebAPI.OpenFinance.Routes
                 var totalAmount = await ClientHelper.GetClientTotalAmount(context, clientID);
 
                 //Get the number of connections
-                var numConnections = clientConnections.Count;
+                numConnections = clientConnections.Count;
 
-                //Get the details for each connection
+                //Loop through all connections to get the connection details
+                foreach (var connection in clientConnections)
+                {
+                    //Get the connection details
+                    var connectionDetails = await ClientHelper.GetConnectionDetails(context, connection);
 
+                    //Add the connection details to the connectionDetail list
+                    connectionDetail.Add(connectionDetails);
+                }
 
                 //Calculate the percentage for each connection
-                //ClientHelper.CalculatePercentageForEachConnection(connectionTotals, totalAmount);
+                ClientHelper.CalculatePercentageForEachConnection(connectionDetail, totalAmount);
 
                 //JSON response
                 var response = new
                 {
                     clientID = clientID,
-                    numConnections = clientConnections.Count,
+                    numConnections = numConnections,
                     totalAmount = totalAmount,
-                    connectionDetails = connectionTotals,
+                    connections = connectionDetail,
                     timestamp = DateTime.UtcNow
                 };
 
