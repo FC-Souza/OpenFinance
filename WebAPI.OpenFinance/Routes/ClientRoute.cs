@@ -235,6 +235,19 @@ namespace WebAPI.OpenFinance.Routes
                     connectionDetail.Add(connectionDetails);
                 }
 
+                //Get the details for all disabled connections
+                var disabledConnections = await ClientHelper.GetDisableClientConnectionsByClientID(context, clientID);
+                
+                //Loop through all disabled connections to get the connection details
+                foreach (var connection in disabledConnections)
+                {
+                    //Get the connection details
+                    var connectionDetails = await ClientHelper.GetDisablebConnectionDetails(context, connection);
+
+                    //Add the connection details to the connectionDetail list
+                    connectionDetail.Add(connectionDetails);
+                }
+
                 //Calculate the percentage for each connection
                 ClientHelper.CalculatePercentageForEachConnection(connectionDetail, totalAmount);
 

@@ -31,5 +31,9 @@ namespace WebAPI.OpenFinance.Models
         [Required]
         [Column("account_number")]
         public int accountNumber { get; set; }
+
+        [Required]
+        [Column("status")]
+        public bool isActive { get; set; } = true;
     }
 }
