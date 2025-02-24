@@ -194,10 +194,6 @@ namespace WebAPI.OpenFinance.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("client_id");
 
-                    b.Property<bool>("isActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("status");
-
                     b.HasKey("connectionID");
 
                     b.HasIndex("bankID");
