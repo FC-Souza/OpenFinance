@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebAPI.OpenFinance.Data;
 using WebAPI.OpenFinance.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace WebAPI.OpenFinance.Helpers
 {
@@ -12,8 +11,7 @@ namespace WebAPI.OpenFinance.Helpers
         public static async Task<List<int>> GetClientConnectionsByClientID(OpenFinanceContext context, int clientID)
         {
             var clientConnections = await context.Connections
-                //.Where(c => c.clientID == clientID)
-                .Where(c => c.clientID == clientID && c.isActive)
+                .Where(c => c.clientID == clientID)
                 .Select(c => c.connectionID)
                 .ToListAsync();
             return clientConnections;
@@ -26,12 +24,11 @@ namespace WebAPI.OpenFinance.Helpers
             return await context.Clients.AnyAsync(c => c.clientID == clientID);
         }
 
-        //Check if the client has any active connections
+        //Check if the client has any connections
         public static async Task<bool> CheckClientConnections(OpenFinanceContext context, int clientID)
         {
             //Using AnyAsync instead of an if statement
-            //return await context.Connections.AnyAsync(c => c.clientID == clientID);
-            return await context.Connections.AnyAsync(c => c.clientID == clientID && c.isActive);
+            return await context.Connections.AnyAsync(c => c.clientID == clientID);
         }
 
         //Calculate the percentage for each product
@@ -200,8 +197,7 @@ namespace WebAPI.OpenFinance.Helpers
                 BankID = connection.bankID,
                 AccountNumber = connection.accountNumber,
                 ConnectionAmount = await GetConnectionTotalAmount(context, connectionID),
-                ConnectionPercentage = 0,
-                IsActive = connection.isActive
+                ConnectionPercentage = 0
             };
             return connectionDetail;
         }
@@ -286,6 +282,7 @@ namespace WebAPI.OpenFinance.Helpers
 
             await context.SaveChangesAsync();
         }
+
 
 
     }
