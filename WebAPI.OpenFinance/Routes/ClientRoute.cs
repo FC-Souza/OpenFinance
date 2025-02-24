@@ -187,6 +187,61 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok(response);
 
             });
+
+            //GET /Clients/{clientID}/Connections
+            /*
+             * Receive the clientID
+             * Check if client exists
+             * Check if the client has any connections
+             * Calculate the total amount for all connections
+             * Calculate the total amount for each connection
+             * Calculate the percentage for each connection
+             * Return a JSON with the numver of connections, total amount and connections details (bankName, bankID, accountNumber, amount, percentage)
+             */
+            route.MapGet("/{clientID}/Connections", async (OpenFinanceContext context, int clientID) =>
+            {
+                //Create a list for connection details
+                var connectionDetail = new List<ConnectionDetails>();
+
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Check if the client has any connections
+                if (!await ClientHelper.CheckClientConnections(context, clientID))
+                {
+                    return Results.BadRequest("Client has no connections");
+                }
+
+                //Get all connections for the clientID
+                var clientConnections = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
+
+                //Get the total amount for all connections
+                var totalAmount = await ClientHelper.GetClientTotalAmount(context, clientID);
+
+                //Get the number of connections
+                var numConnections = clientConnections.Count;
+
+                //Get the details for each connection
+
+
+                //Calculate the percentage for each connection
+                //ClientHelper.CalculatePercentageForEachConnection(connectionTotals, totalAmount);
+
+                //JSON response
+                var response = new
+                {
+                    clientID = clientID,
+                    numConnections = clientConnections.Count,
+                    totalAmount = totalAmount,
+                    connectionDetails = connectionTotals,
+                    timestamp = DateTime.UtcNow
+                };
+
+                return Results.Ok(response);
+            });
         }
     }
 }

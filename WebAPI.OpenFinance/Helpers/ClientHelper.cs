@@ -125,5 +125,65 @@ namespace WebAPI.OpenFinance.Helpers
             return mutualFundTotal;
         }
 
+        //Get the total amount of all the products for a ClientID
+        public static async Task<decimal> GetClientTotalAmount(OpenFinanceContext context, int clientID)
+        {
+            var cashTotal = await GetClientCashTotalAmount(context, clientID);
+            var stockTotal = await GetClienStockTotalAmount(context, clientID);
+            var mutualFundTotal = await GetClientMutualFundTotalAmount(context, clientID);
+
+            var totalAmount = cashTotal + stockTotal + mutualFundTotal;
+            return totalAmount;
+        }
+
+        //Get the total amount for all the products for a ConnectionID
+        public static async Task<decimal> GetConnectionTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var cashTotal = await GetConnectionCashTotalAmount(context, connectionID);
+
+            var stockTotal = await GetConnectionStockTotalAmount(context, connectionID);
+
+            var mutualFundTotal = await GetConnectionMutualFundTotalAmount(context, connectionID);
+
+            var totalAmount = cashTotal + stockTotal + mutualFundTotal;
+            return totalAmount;
+        }
+
+        //Get the total amount for cash for a ConnectionID
+        public static async Task<decimal> GetConnectionCashTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var cashTotal = await context.CashInfo
+                .Where(c => c.connectionId == connectionID)
+                .SumAsync(c => c.amount);
+            return cashTotal;
+        }
+
+        //Get the total amount for stock for a ConnectionID
+        public static async Task<decimal> GetConnectionStockTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var stockTotal = await context.StockInfo
+                                .Where(si => si.connectionId == connectionID)
+                                .Join(context.Stock,
+                                    si => si.stockId,
+                                    s => s.stockId,
+                                    (si, s) => si.quantity * s.lastDayPrice)
+                                .SumAsync();
+            return stockTotal;
+        }
+
+        //Get the total amount for mutual fund for a ConnectionID
+        public static async Task<decimal> GetConnectionMutualFundTotalAmount(OpenFinanceContext context, int connectionID)
+        {
+            var mutualFundTotal = await context.MutualFundInfo
+                                    .Where(mf => mf.ConnectionID == connectionID)
+                                    .Join(context.MutualFund,
+                                        mf => mf.MFID,
+                                        m => m.MFID,
+                                        (mf, m) => mf.QuantityShares * m.MFNAV)
+                                    .SumAsync();
+            return mutualFundTotal;
+        }
+
+
     }
 }
