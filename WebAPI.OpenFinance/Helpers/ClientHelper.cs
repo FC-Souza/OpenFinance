@@ -228,6 +228,62 @@ namespace WebAPI.OpenFinance.Helpers
             }
         }
 
+        //Get the connection details for all disable connection
+        public static async Task<ConnectionDetails> GetDisablebConnectionDetails(OpenFinanceContext context, int connectionID)
+        {
+            //Select * from Connections where connectionID = connectionID
+            var connection = await context.Connections
+                .FirstOrDefaultAsync(c => c.connectionID == connectionID);
+
+
+            var connectionDetail = new ConnectionDetails
+            {
+                BankName = await GetBankName(context, connection.bankID),
+                BankID = connection.bankID,
+                AccountNumber = connection.accountNumber,
+                ConnectionAmount = 0,
+                ConnectionPercentage = 0,
+                IsActive = connection.isActive
+            };
+
+            return connectionDetail;
+        }
+
+        //Get all the disable connections for a clientID
+        public static async Task<List<int>> GetDisableClientConnectionsByClientID(OpenFinanceContext context, int clientID)
+        {
+            var disableClientConnections = await context.Connections
+                .Where(c => c.clientID == clientID && !c.isActive)
+                .Select(c => c.connectionID)
+                .ToListAsync();
+            return disableClientConnections;
+        }
+
+        //Check if the connection exists
+        public static async Task<bool> CheckConnectionExists(OpenFinanceContext context, int clientID,int bankID, int accountNumber)
+        {
+            //Select * from connections where client_id = clientID and bank_id = bankID and account_number = accountNumber
+            return await context.Connections
+                .AnyAsync(c => c.clientID == clientID && c.bankID == bankID && c.accountNumber == accountNumber);
+        }
+
+        //Add a new connection
+        public static async Task AddNewConnection(OpenFinanceContext context, int clientID, int bankID, int accountNumber)
+        {
+            var newConnection = new ConnectionsModel
+            {
+                clientID = clientID,
+                bankID = bankID,
+                accountNumber = accountNumber,
+                isActive = true
+            };
+
+            context.Connections.Add(newConnection);
+
+            await context.SaveChangesAsync();
+        }
+
+
 
     }
 }
