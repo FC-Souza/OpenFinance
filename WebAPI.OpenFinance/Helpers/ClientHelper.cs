@@ -232,7 +232,7 @@ namespace WebAPI.OpenFinance.Helpers
             }
         }
 
-        //Get the connection details for all disable connections
+        //Get the connection details for all disable connection
         public static async Task<ConnectionDetails> GetDisablebConnectionDetails(OpenFinanceContext context, int connectionID)
         {
             //Select * from Connections where connectionID = connectionID
