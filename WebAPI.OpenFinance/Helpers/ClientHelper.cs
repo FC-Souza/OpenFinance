@@ -308,6 +308,16 @@ namespace WebAPI.OpenFinance.Helpers
             await context.SaveChangesAsync();
         }
 
+        //Check if the connection is already disabled or enabled
+        public static async Task<bool> CheckConnectionStatus(OpenFinanceContext context, int clientID, int connectionID, bool newStatus)
+        {
+            var connection = await context.Connections
+                .FirstOrDefaultAsync(c => c.connectionID == connectionID && c.clientID == clientID);
+
+            //Check if the connection is already disabled or enabled
+            return connection.isActive == newStatus;
+        }
+
 
     }
 }
