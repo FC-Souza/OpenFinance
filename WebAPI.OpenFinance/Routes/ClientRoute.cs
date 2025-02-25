@@ -3,6 +3,7 @@ using WebAPI.OpenFinance.Data;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.OpenFinance.Helpers;
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics;
 
 namespace WebAPI.OpenFinance.Routes
 {
@@ -303,20 +304,44 @@ namespace WebAPI.OpenFinance.Routes
              */
             route.MapPut("/Connections", async (OpenFinanceContext context, UpdateConnection updateConnection) =>
             {
+                Debug.WriteLine($"[START] Received request to update connection: ClientID={updateConnection.ClientID}, ConnectionID={updateConnection.ConnectionID}, NewStatus={updateConnection.Status}");
+
+
                 //Check if the client exists
                 if (!await ClientHelper.CheckClientExists(context, updateConnection.ClientID))
                 {
+                    Debug.WriteLine("[ERROR] Client not found");
+
                     return Results.BadRequest("Client not found");
                 }
+
+                Debug.WriteLine("[INFO] Client found");
 
                 //Check if the connection exists
                 if (!await ClientHelper.CheckConnectionIDExists(context, updateConnection.ClientID, updateConnection.ConnectionID))
                 {
+                    Debug.WriteLine("[ERROR] Connection not found for this client");
+
                     return Results.BadRequest("Connection not found for this client");
                 }
 
+                Debug.WriteLine("[INFO] Connection exists");
+
+                //Check if the connection is already disabled/enabled
+                if (await ClientHelper.CheckConnectionStatus(context, updateConnection.ClientID, updateConnection.ConnectionID, updateConnection.Status))
+                {
+                    Debug.WriteLine($"[DEBUG] Connection current status check: {updateConnection.Status}");
+
+                    return Results.BadRequest("Connection is already disabled/enabled");
+                }
+
+
+                Debug.WriteLine("[INFO] Updating connection status...");
+
                 //Update the connection status
                 await ClientHelper.EnableDisableConnection(context, updateConnection.ClientID, updateConnection.ConnectionID, updateConnection.Status);
+
+                Debug.WriteLine("[SUCCESS] Connection updated successfully");
 
                 //Return success message
                 return Results.Ok("Connection updated successfully");
