@@ -5,6 +5,7 @@
         public string BankName { get; set; }
         public int BankID { get; set; }
         public int AccountNumber { get; set; }
+        public int ConnectionID { get; set; }
         public decimal ConnectionAmount { get; set; }
         public decimal ConnectionPercentage { get; set; }
         public bool IsActive { get; set; }

@@ -199,6 +199,7 @@ namespace WebAPI.OpenFinance.Helpers
                 BankName = await GetBankName(context, connection.bankID),
                 BankID = connection.bankID,
                 AccountNumber = connection.accountNumber,
+                ConnectionID = connection.connectionID,
                 ConnectionAmount = await GetConnectionTotalAmount(context, connectionID),
                 ConnectionPercentage = 0,
                 IsActive = connection.isActive
@@ -245,6 +246,7 @@ namespace WebAPI.OpenFinance.Helpers
                 BankName = await GetBankName(context, connection.bankID),
                 BankID = connection.bankID,
                 AccountNumber = connection.accountNumber,
+                ConnectionID = connection.connectionID,
                 ConnectionAmount = 0,
                 ConnectionPercentage = 0,
                 IsActive = connection.isActive
@@ -283,6 +285,25 @@ namespace WebAPI.OpenFinance.Helpers
             };
 
             context.Connections.Add(newConnection);
+
+            await context.SaveChangesAsync();
+        }
+
+        //Check if the connection exists
+        public static async Task<bool> CheckConnectionIDExists(OpenFinanceContext context,int clientID, int connectionID)
+        {
+            //Select * from connections where client_id = clientID and connection_id = connectionID
+            return await context.Connections
+                .AnyAsync(c => c.connectionID == connectionID && c.clientID == clientID);
+        }
+
+        //Enable or disable a connection
+        public static async Task EnableDisableConnection(OpenFinanceContext context, int clientID, int connectionID, bool newStatus)
+        {
+            var connection = await context.Connections
+                .FirstOrDefaultAsync(c => c.connectionID == connectionID && c.clientID == clientID);
+
+            connection.isActive = newStatus;
 
             await context.SaveChangesAsync();
         }

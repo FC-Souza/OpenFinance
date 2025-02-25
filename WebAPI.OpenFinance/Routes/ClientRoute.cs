@@ -292,6 +292,35 @@ namespace WebAPI.OpenFinance.Routes
                 //Return success message
                 return Results.Ok("Connection added successfully");
             });
+
+            //PUT /Clients/Connections
+            /*
+             * Receive the JSON with the clientID, connectionID and status
+             * Check if the client exists
+             * Check if the connection exists
+             * Update the connection status
+             * Return sucess message
+             */
+            route.MapPut("/Connections", async (OpenFinanceContext context, UpdateConnection updateConnection) =>
+            {
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, updateConnection.ClientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Check if the connection exists
+                if (!await ClientHelper.CheckConnectionIDExists(context, updateConnection.ClientID, updateConnection.ConnectionID))
+                {
+                    return Results.BadRequest("Connection not found for this client");
+                }
+
+                //Update the connection status
+                await ClientHelper.EnableDisableConnection(context, updateConnection.ClientID, updateConnection.ConnectionID, updateConnection.Status);
+
+                //Return success message
+                return Results.Ok("Connection updated successfully");
+            }); 
         }
     }
 
@@ -301,5 +330,13 @@ namespace WebAPI.OpenFinance.Routes
         public int ClientID { get; set; }
         public int BankID { get; set; }
         public int AccountNumber { get; set; }
+    }
+
+    //Class to receive the JSON from Update Connection
+    public class UpdateConnection
+    {
+        public int ClientID { get; set; }
+        public int ConnectionID { get; set; }
+        public bool Status { get; set; }
     }
 }
