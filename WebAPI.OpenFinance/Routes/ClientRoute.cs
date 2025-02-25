@@ -345,7 +345,25 @@ namespace WebAPI.OpenFinance.Routes
 
                 //Return success message
                 return Results.Ok("Connection updated successfully");
-            }); 
+            });
+
+            //GET /Clients/{clientID}/AssetsDetails
+            /*
+             * Receive the clientID
+             * Check if client exists
+             * Check if the client has any connections
+             * Get number of products for the clientID
+             * Calculate the total amount for all connections and all products
+             * Calculate the total amount for each product
+             * Get number of items for each product
+             * Calculate the percentage for each product
+             * Get the list of items for each product with itemName, amount, profitLoss and percentage
+             * Return a JSON with clientID, numProducts, totalAmount, products (productName, numProducts, productTotalAmount, portfolioPercentage and items (itemName, amount, profitLoss, percentage) and timestamp
+             */
+            route.MapGet("/{clientID}/AssetsDetails", async (OpenFinanceContext context, int clientID) =>
+            {
+                
+            });
         }
     }
 
