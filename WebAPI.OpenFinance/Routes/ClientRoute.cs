@@ -189,7 +189,7 @@ namespace WebAPI.OpenFinance.Routes
 
             });
 
-            //GET /Clients/{clientID}/Connections
+            //GET /Clients/{clientID}/GetAllConnections
             /*
              * Receive the clientID
              * Check if client exists
@@ -199,7 +199,7 @@ namespace WebAPI.OpenFinance.Routes
              * Calculate the percentage for each connection
              * Return a JSON with the numver of connections, total amount and connections details (bankName, bankID, accountNumber, amount, percentage)
              */
-            route.MapGet("/{clientID}/Connections", async (OpenFinanceContext context, int clientID) =>
+            route.MapGet("/{clientID}/GetAllConnections", async (OpenFinanceContext context, int clientID) =>
             {
                 //Create a list for connection details
                 var connectionDetail = new List<ConnectionDetails>();
@@ -265,7 +265,7 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok(response);
             });
 
-            //POST /Clients/Connections
+            //POST /Clients/AddNewConnection
             /*
              * Receive the JSON with the clientID, bankID and accountNumber
              * Check if the client exists
@@ -273,7 +273,7 @@ namespace WebAPI.OpenFinance.Routes
              * Add the new connection
              * Return sucess message
              */
-            route.MapPost("/Connections", async (OpenFinanceContext context, Connection connection) =>
+            route.MapPost("/AddNewConnection", async (OpenFinanceContext context, Connection connection) =>
             {
                 //Check if the client exists
                 if (!await ClientHelper.CheckClientExists(context, connection.ClientID))
@@ -294,7 +294,7 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok("Connection added successfully");
             });
 
-            //PUT /Clients/Connections
+            //PUT /Clients/EnableDisableConnection
             /*
              * Receive the JSON with the clientID, connectionID and status
              * Check if the client exists
@@ -302,7 +302,7 @@ namespace WebAPI.OpenFinance.Routes
              * Update the connection status
              * Return sucess message
              */
-            route.MapPut("/Connections", async (OpenFinanceContext context, UpdateConnection updateConnection) =>
+            route.MapPut("/EnableDisableConnection", async (OpenFinanceContext context, UpdateConnection updateConnection) =>
             {
                 Debug.WriteLine($"[START] Received request to update connection: ClientID={updateConnection.ClientID}, ConnectionID={updateConnection.ConnectionID}, NewStatus={updateConnection.Status}");
 
