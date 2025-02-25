@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebAPI.OpenFinance.Data;
 using WebAPI.OpenFinance.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace WebAPI.OpenFinance.Helpers
 {
@@ -11,7 +12,8 @@ namespace WebAPI.OpenFinance.Helpers
         public static async Task<List<int>> GetClientConnectionsByClientID(OpenFinanceContext context, int clientID)
         {
             var clientConnections = await context.Connections
-                .Where(c => c.clientID == clientID)
+                //.Where(c => c.clientID == clientID)
+                .Where(c => c.clientID == clientID && c.isActive)
                 .Select(c => c.connectionID)
                 .ToListAsync();
             return clientConnections;
@@ -24,11 +26,12 @@ namespace WebAPI.OpenFinance.Helpers
             return await context.Clients.AnyAsync(c => c.clientID == clientID);
         }
 
-        //Check if the client has any connections
+        //Check if the client has any active connections
         public static async Task<bool> CheckClientConnections(OpenFinanceContext context, int clientID)
         {
             //Using AnyAsync instead of an if statement
-            return await context.Connections.AnyAsync(c => c.clientID == clientID);
+            //return await context.Connections.AnyAsync(c => c.clientID == clientID);
+            return await context.Connections.AnyAsync(c => c.clientID == clientID && c.isActive);
         }
 
         //Calculate the percentage for each product
@@ -197,7 +200,8 @@ namespace WebAPI.OpenFinance.Helpers
                 BankID = connection.bankID,
                 AccountNumber = connection.accountNumber,
                 ConnectionAmount = await GetConnectionTotalAmount(context, connectionID),
-                ConnectionPercentage = 0
+                ConnectionPercentage = 0,
+                IsActive = connection.isActive
             };
             return connectionDetail;
         }
@@ -260,7 +264,7 @@ namespace WebAPI.OpenFinance.Helpers
         }
 
         //Check if the connection exists
-        public static async Task<bool> CheckConnectionExists(OpenFinanceContext context, int clientID,int bankID, int accountNumber)
+        public static async Task<bool> CheckConnectionExists(OpenFinanceContext context, int clientID, int bankID, int accountNumber)
         {
             //Select * from connections where client_id = clientID and bank_id = bankID and account_number = accountNumber
             return await context.Connections
@@ -282,7 +286,6 @@ namespace WebAPI.OpenFinance.Helpers
 
             await context.SaveChangesAsync();
         }
-
 
 
     }
