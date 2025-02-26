@@ -362,7 +362,60 @@ namespace WebAPI.OpenFinance.Routes
              */
             route.MapGet("/{clientID}/AssetsDetails", async (OpenFinanceContext context, int clientID) =>
             {
-                
+                var productDetail = new List<AssetsProductDetailsModel>();
+                var productItem = new List<AssetsProductItemModel>();
+                int numProducts = 0;
+                decimal totalAmount = 0;
+
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Check if the client has any connections
+                if (!await ClientHelper.CheckClientConnections(context, clientID))
+                {
+                    return Results.BadRequest("Client has no connections");
+                }
+
+                //Get all connections for the clientID
+                var clientConnections = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
+
+                //STOCK
+                var stockTotal = await ClientHelper.GetClienStockTotalAmount(context, clientID);
+
+                //Add the stock details to the productDetails list
+                productDetail.Add(new AssetsProductDetailsModel { ProductName = "Stock", ProductTotalAmount = stockTotal });
+
+                //MUTAL FUND
+                var mutualFundTotal = await ClientHelper.GetClientMutualFundTotalAmount(context, clientID);
+                productDetail.Add(new AssetsProductDetailsModel { ProductName = "Mutual Fund", ProductTotalAmount = mutualFundTotal });
+
+                //Calculate the total amount for all products
+                totalAmount = stockTotal + mutualFundTotal;
+
+                //Calculate the % of representation of all products and add to the productDetails
+                ClientHelper.CalculatePercentageForEachProduct(productDetail);
+
+                //Get the number of products
+                numProducts = ClientHelper.GetNumProducts(productDetail);
+
+                //Get the Stock items details
+                var stockItems = await ClientHelper.GetStockItems(context, clientID);
+
+                //Get the Mutual Fund items details
+                var mutualFundItems = await ClientHelper.GetMutualFundItems(context, clientID);
+
+                //Calculate the profit loss for each item
+                //await ClientHelper.CalculateStockPercentageProfitLoss(stockItems);
+                //await ClientHelper.CalculateMutualFundPercentageProfitLoss(mutualFundItems);
+
+                //Get The number of items for each product
+                var stockNumItems = stockItems.Count;
+                var mutualFundNumItems = mutualFundItems.Count;
+
+ 
             });
         }
     }

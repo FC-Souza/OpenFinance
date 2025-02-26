@@ -6,5 +6,6 @@
         public int NumItems { get; set; }
         public decimal ProductTotalAmount { get; set; }
         public decimal PortfolioPercentage { get; set; }
+        public List<AssetsProductItemModel> Items { get; set; }
     }
 }

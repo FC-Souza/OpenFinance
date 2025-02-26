@@ -318,6 +318,121 @@ namespace WebAPI.OpenFinance.Helpers
             return connection.isActive == newStatus;
         }
 
+        //[Overload] Calculate the percentage for each product 
+        public static void CalculatePercentageForEachProduct(List<AssetsProductDetailsModel> productDetails)
+        {
+
+            decimal totalAmount = CalculateTotalAmount(productDetails);
+
+            //Calculate the portfolio percentage for each product
+            foreach (var product in productDetails)
+            {
+                if (product.ProductTotalAmount > 0)
+                {
+                    //product.PortfolioPercentage = (product.ProdTotal / totalAmount) * 100;
+                    //Round to 2 decimal
+                    product.PortfolioPercentage = Math.Round((product.ProductTotalAmount / totalAmount) * 100, 2);
+                }
+                else
+                {
+                    product.PortfolioPercentage = 0;
+                }
+            }
+        }
+
+        //[Overload] Calculate the total amount for all products
+        public static decimal CalculateTotalAmount(List<AssetsProductDetailsModel> productDetails)
+        {
+            decimal totalAmount = 0;
+            foreach (var product in productDetails)
+            {
+                totalAmount += product.ProductTotalAmount;
+            }
+            return totalAmount;
+        }
+
+        //[Overload] Get the number of products
+        public static int GetNumProducts(List<AssetsProductDetailsModel> productDetails)
+        {
+            int numProducts = 0;
+            foreach (var product in productDetails)
+            {
+                if (product.ProductTotalAmount > 0)
+                {
+                    numProducts++;
+                }
+            }
+            return numProducts;
+        }
+
+        //Get the details for all stock items for a clientID
+        public static async Task<List<AssetsProductItemModel>> GetStockItems(OpenFinanceContext context, int clientID)
+        {
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+
+            var stockItems = await context.StockInfo
+                .Where(si => clientConnections.Contains(si.connectionId))
+                .Join(context.Stock,
+                    si => si.stockId,
+                    s => s.stockId,
+                    (si, s) => new AssetsProductItemModel
+                    {
+                        ItemName = s.stockName,
+                        ItemAmount = si.quantity * s.lastDayPrice
+                        //ItemProfitLoss = await GetStockPercentageProfitLoss(context, si.averagePrice, si.quantity, s.lastDayPrice)
+                    })
+                .ToListAsync();
+
+            return stockItems;
+        }
+
+        //Calculate the percentage profit loss for each stock item
+        public static async Task CalculatePercentageProfitLossForEachStockItem(OpenFinanceContext context, List<AssetsProductItemModel> stockItems)
+        {
+            foreach (var stockItem in stockItems)
+            {
+                stockItem.ItemProfitLoss = await GetStockPercentageProfitLoss(context, stock, stockItem.ItemAmount);
+            }
+        }
+
+        //Calculate the percentage profit loss for a stock item
+        public static async Task<decimal> GetStockPercentageProfitLoss(OpenFinanceContext context, decimal averagePrice, int quantity, decimal lastDayPrice)
+        {
+            decimal profitLoss = (lastDayPrice - averagePrice) * quantity;
+
+            decimal percentageProfitLoss = (profitLoss / (averagePrice * quantity)) * 100;
+
+            return percentageProfitLoss;
+        }
+
+        //Get the details for all mutual funds items for a clientID
+        public static async Task<List<AssetsProductItemModel>> GetMutualFundItems(OpenFinanceContext context, int clientID)
+        {
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+            var mutualFundItems = await context.MutualFundInfo
+                .Where(mfi => clientConnections.Contains(mfi.ConnectionID))
+                .Join(context.MutualFund,
+                    mfi => mfi.MFID,
+                    mf => mf.MFID,
+                    (mfi, mf) => new AssetsProductItemModel
+                    {
+                        ItemName = mf.MFName,
+                        ItemAmount = mfi.QuantityShares * mf.MFNAV
+                    })
+                .ToListAsync();
+
+            return mutualFundItems;
+        }
+
+        ////Calculate the percentage profit loss for a mutual fund item
+        //public static async Task<decimal> GetMutualFundPercentageProfitLoss(OpenFinanceContext context, int quantityShares, decimal currentNAV, decimal averageNAV)
+        //{
+        //    decimal profitLoss = (currentNAV - averageNAV) * quantityShares;
+        //    decimal percentageProfitLoss = (profitLoss / (averageNAV * quantityShares)) * 100;
+        //    return percentageProfitLoss;
+        //}
+
+
 
     }
 }
