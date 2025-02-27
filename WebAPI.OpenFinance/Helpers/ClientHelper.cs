@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using WebAPI.OpenFinance.Data;
 using WebAPI.OpenFinance.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
@@ -317,6 +318,259 @@ namespace WebAPI.OpenFinance.Helpers
             //Check if the connection is already disabled or enabled
             return connection.isActive == newStatus;
         }
+
+        //Get the list os stock items for a clientID
+        public static async Task<List<AssetsProductItemModel>> GetStockItems(OpenFinanceContext context, int clientID)
+        {
+            //SELECT
+            //    s.ticker AS itemName
+            //    , s.stock_id AS itemID
+            //    , SUM(si.quantity) AS itemQuantity
+            //    , s.last_day_price AS itemLastPrice
+            //    , SUM(si.quantity * si.average_price) / SUM(si.quantity) AS itemAveragePrice
+            //    , SUM(si.quantity) *s.last_day_price AS itemAmount
+            //    , SUM(si.quantity * si.average_price) AS itemAmountInvested
+            //    , (SUM(si.quantity) * s.last_day_price) -SUM(si.quantity * si.average_price) AS itemProfitLoss
+            //    , ((SUM(si.quantity) * s.last_day_price) - SUM(si.quantity * si.average_price)) / SUM(si.quantity * si.average_price) * 100 AS itemProfitLossPercentage
+            //FROM stock s
+            //JOIN stock_info si ON s.stock_id = si.stock_id
+            //WHERE 1=1
+            //AND si.connection_id IN(1,2)
+            //GROUP BY s.stock_id;
+
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+
+            //ChatGPT -> Transformed the query to LINQ and created the model
+            var stockItems = await context.StockInfo
+                .Where(si => clientConnections.Contains(si.connectionId))
+                .Join(context.Stock,
+                    si => si.stockId,
+                    s => s.stockId,
+                    (si, s) => new
+                    {
+                        s.stockId,
+                        s.ticker,
+                        si.quantity,
+                        si.averagePrice,
+                        s.lastDayPrice
+                    })
+                .GroupBy(g => new { g.stockId, g.ticker, g.lastDayPrice })
+                .Select(g => new AssetsProductItemModel
+                {
+                    ItemID = g.Key.stockId,
+                    ItemName = g.Key.ticker,
+                    ItemQuantity = g.Sum(i => i.quantity),
+                    ItemLastPrice = g.Key.lastDayPrice,
+                    ItemAveragePrice = g.Sum(i => i.quantity * i.averagePrice) / g.Sum(i => i.quantity),
+                    ItemAmount = g.Sum(i => i.quantity) * g.Key.lastDayPrice,
+                    ItemAmountInvested = g.Sum(i => i.quantity * i.averagePrice),
+                    ItemProfitLoss = (g.Sum(i => i.quantity) * g.Key.lastDayPrice) - g.Sum(i => i.quantity * i.averagePrice),
+                    //ItemProfitLossPercentage = g.Sum(i => i.quantity * i.averagePrice) > 0
+                    //    ? ((g.Sum(i => i.quantity) * g.Key.lastDayPrice) - g.Sum(i => i.quantity * i.averagePrice)) / g.Sum(i => i.quantity * i.averagePrice) * 100
+                    //    : 0
+                    ItemProfitLossPercentage = g.Sum(i => i.averagePrice * i.quantity) > 0
+                        ? Math.Round((((g.Sum(i => i.quantity) * g.Key.lastDayPrice) - g.Sum(i => i.quantity * i.averagePrice)) / g.Sum(i => i.quantity * i.averagePrice)) * 100, 2)
+                        : 0
+
+                })
+                .ToListAsync();
+
+            return stockItems;
+        }
+
+        //Calculate Profit Loss
+        //public static decimal CalculateProductProfitLoss(List<AssetsProductItemModel> productItems)
+        //{
+        //    decimal itemProfitLoss = 0;
+
+        //    foreach (var productItem in productItems)
+        //    {
+        //        itemProfitLoss += productItem.ItemProfitLoss;
+        //    }
+
+        //    return itemProfitLoss;
+        //}
+        public static decimal CalculateProductProfitLoss(decimal total, decimal totalInvested)
+        {
+            return total - totalInvested;
+        }
+
+        //Calculate Profit Loss Percentage
+        public static decimal CalculateProductProfitLossPercentage(decimal total, decimal totalInvested)
+        {
+            if (totalInvested <= 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return Math.Round(((total - totalInvested) / totalInvested) * 100, 2);
+            }
+        }
+
+        //Calculate Stock total amount invested
+        public static decimal CalculateProductTotalAmountInvested(List<AssetsProductItemModel> productItems)
+        {
+            decimal itemTotalAmountInvested = 0;
+
+            foreach (var productItem in productItems)
+            {
+                itemTotalAmountInvested += productItem.ItemAmountInvested;
+            }
+
+            return itemTotalAmountInvested;
+        }
+
+        //Get stock number of items. Discard items with 0 quantity
+        public static int GetNumItems(List<AssetsProductItemModel> productItems)
+        {
+            int numProducts = 0;
+
+            foreach (var productItem in productItems)
+            {
+                if (productItem.ItemQuantity > 0)
+                {
+                    numProducts++;
+                }
+            }
+
+            return numProducts;
+        }
+
+        //Get the number of products
+        public static int GetNumProducts(List<AssetsProductDetailsModel> productItems)
+        {
+            int numProducts = 0;
+
+            foreach (var productItem in productItems)
+            {
+                if (productItem.ProductTotalAmount > 0)
+                {
+                    numProducts++;
+                }
+            }
+
+            return numProducts;
+        }
+
+        //Calculate the total amount for all products
+        public static decimal CalculateAssetsTotalAmount(List<AssetsProductDetailsModel> productItems)
+        {
+            decimal totalAmount = 0;
+
+            foreach (var productItem in productItems)
+            {
+                totalAmount += productItem.ProductTotalAmount;
+            }
+
+            return totalAmount;
+        }
+
+        //Get the list of mutual fund items for a clientID
+        public static async Task<List<AssetsProductItemModel>> GetMutualFundItems(OpenFinanceContext context, int clientID)
+        {
+            //SELECT
+            //    mf.mf_name AS itemName
+	        //    , mf.mf_id AS itemID
+	        //    , SUM(mfi.quantity_shares) AS itemQuantity
+            //    , mf.mf_last_nav AS itemLastPrice
+	        //    , SUM(mfi.quantity_shares * mfi.average_nav) / SUM(mfi.quantity_shares) AS itemAveragePrice
+            //    , SUM(mfi.quantity_shares) *mf.mf_last_nav AS itemAmount
+            //    , SUM(mfi.quantity_shares * mfi.average_nav) AS itemAmountInvested
+            //    , (SUM(mfi.quantity_shares) * mf.mf_last_nav) -SUM(mfi.quantity_shares * mfi.average_nav) AS itemProfitLoss
+            //    , ((SUM(mfi.quantity_shares) * mf.mf_last_nav) - SUM(mfi.quantity_shares * mfi.average_nav)) / SUM(mfi.quantity_shares * mfi.average_nav) * 100 AS itemProfitLossPercentage
+            //FROM mutual_fund mf
+            //JOIN mutual_fund_info mfi ON mf.mf_id = mfi.mf_id
+            //WHERE 1 = 1
+            //AND mfi.connection_id IN(1,2)
+            //GROUP BY mf.mf_id;
+
+            var clientConnections = await GetClientConnectionsByClientID(context, clientID);
+
+            var mutualFundItems = await context.MutualFundInfo
+                .Where(mfi => clientConnections.Contains(mfi.ConnectionID))
+                .Join(context.MutualFund,
+                    mfi => mfi.MFID,
+                    mf => mf.MFID,
+                    (mfi, mf) => new
+                    {
+                        mf.MFID,
+                        mf.MFName,
+                        mfi.QuantityShares,
+                        mfi.AverageNAV,
+                        mf.MFNAV
+                    })
+                .GroupBy(g => new { g.MFID, g.MFName, g.MFNAV })
+                .Select(g => new AssetsProductItemModel
+                {
+                    ItemID = g.Key.MFID,
+                    ItemName = g.Key.MFName,
+                    ItemQuantity = g.Sum(i => i.QuantityShares),
+                    ItemLastPrice = g.Key.MFNAV,
+                    ItemAveragePrice = g.Sum(i => i.QuantityShares * i.AverageNAV) / g.Sum(i => i.QuantityShares),
+                    ItemAmount = g.Sum(i => i.QuantityShares) * g.Key.MFNAV,
+                    ItemAmountInvested = g.Sum(i => i.QuantityShares * i.AverageNAV),
+                    ItemProfitLoss = (g.Sum(i => i.QuantityShares) * g.Key.MFNAV) - g.Sum(i => i.QuantityShares * i.AverageNAV),
+                    //ItemProfitLossPercentage = g.Sum(i => i.QuantityShares * i.AverageNAV) > 0
+                    //    ? ((g.Sum(i => i.QuantityShares) * g.Key.MFNAV) - g.Sum(i => i.QuantityShares * i.AverageNAV)) / g.Sum(i => i.QuantityShares * i.AverageNAV) * 100
+                    //    : 0
+                    ItemProfitLossPercentage = g.Sum(i => i.QuantityShares * i.AverageNAV) > 0
+                        ? Math.Round((((g.Sum(i => i.QuantityShares) * g.Key.MFNAV) - g.Sum(i => i.QuantityShares * i.AverageNAV)) / g.Sum(i => i.QuantityShares * i.AverageNAV)) * 100, 2)
+                        : 0
+                })
+                .ToListAsync();
+
+            return mutualFundItems;
+        }
+
+        //Calculate the percentage for each product
+        public static void CalculatePercentageForEachProduct(List<AssetsProductDetailsModel> productDetails)
+        {
+            decimal totalAmount = CalculateAssetsTotalAmount(productDetails);
+
+            //Calculate the portfolio percentage for each product
+            foreach (var product in productDetails)
+            {
+                if (product.ProductTotalAmount > 0)
+                {
+                    product.PortfolioPercentage = Math.Round((product.ProductTotalAmount / totalAmount) * 100, 2);
+                }
+                else
+                {
+                    product.PortfolioPercentage = 0;
+                }
+            }
+        }
+
+        //Calculate the percentage for each item for all products
+        public static void CalculatePercentageForEachItem(List<AssetsProductDetailsModel> productDetails)
+        {
+            decimal totalAmount = CalculateAssetsTotalAmount(productDetails);
+
+            if (totalAmount <= 0)
+            {
+                return;
+            }
+
+            foreach (var product in productDetails)
+            {
+                foreach (var item in product.Items)
+                {
+                    if (item.ItemAmount > 0)
+                    {
+                        item.PortfolioPercentage = Math.Round((item.ItemAmount / totalAmount) * 100, 2);
+                    }
+                    else
+                    {
+                        item.PortfolioPercentage = 0;
+                    }
+                }
+            }
+        }
+
+
+
+
 
 
     }

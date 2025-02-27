@@ -345,7 +345,152 @@ namespace WebAPI.OpenFinance.Routes
 
                 //Return success message
                 return Results.Ok("Connection updated successfully");
-            }); 
+            });
+
+            //GET /Clients/{clientID}/AssetsDetails
+            /*
+             * Receive the clientID
+             * Check if client exists
+             * Check if the client has any connections
+             * Get number of products for the clientID
+             * Calculate the total amount for all connections and all products
+             * Calculate the total amount for each product
+             * Get number of items for each product
+             * Calculate the percentage for each product
+             * Get the list of items for each product with itemName, amount, profitLoss and percentage
+             * Return a JSON with clientID, numProducts, totalAmount, products (productName, numProducts, productTotalAmount, portfolioPercentage and items (itemName, amount, profitLoss, percentage) and timestamp
+             */
+            route.MapGet("/{clientID}/AssetsDetails", async (OpenFinanceContext context, int clientID) =>
+            {
+                var productDetail = new List<AssetsProductDetailsModel>();
+                var productItem = new List<AssetsProductItemModel>();
+                int numProducts = 0;
+                decimal totalAmount = 0;
+
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Check if the client has any connections
+                if (!await ClientHelper.CheckClientConnections(context, clientID))
+                {
+                    return Results.BadRequest("Client has no connections");
+                }
+
+                //Get all connections for the clientID
+                //var clientConnections = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
+
+
+                ////////// STOCK //////////
+
+
+                //Calculate the stock total amount for the clientID
+                decimal stockTotal = await ClientHelper.GetClienStockTotalAmount(context, clientID);
+
+                //Get the list of items for the stock
+                var stockItems = await ClientHelper.GetStockItems(context, clientID);
+
+                //Get the number of items for the stock
+                //TODO: Discard items with 0 quantity
+                //int stockNumItems = stockItems.Count;
+                int stockNumItems = ClientHelper.GetNumItems(stockItems);
+
+                //Calclulate the total amount invested for the product stock
+                decimal stockTotalInvested = ClientHelper.CalculateProductTotalAmountInvested(stockItems);
+
+                //Calculate the profit loss for the product stock
+                //decimal stockProfitLoss = ClientHelper.CalculateProductProfitLoss(stockItems);
+                decimal stockProfitLoss = ClientHelper.CalculateProductProfitLoss(stockTotal, stockTotalInvested);
+
+                //Calculate the profit loss percentage for the product stock
+                decimal stockProfitLossPercentage = ClientHelper.CalculateProductProfitLossPercentage(stockProfitLoss, stockTotalInvested);
+
+
+                //Create the stock product details
+                productDetail.Add
+                (
+                    new AssetsProductDetailsModel 
+                    {
+                        ProductName = "Stock",
+                        NumItems = stockNumItems,
+                        ProductTotalAmount = stockTotal,
+                        PortfolioPercentage = 0,
+                        ProductTotalAmountInvested = stockTotalInvested,
+                        ProductTotalProfitLoss = stockProfitLoss,
+                        ProductTotalProfitLossPercentage = stockProfitLossPercentage,
+                        Items = stockItems
+                    }
+                );
+
+
+                ////////// MUTUAL FUNDS //////////
+
+
+                //Calculate the mutual fund total amount for the clientID
+                decimal mutualFundTotal = await ClientHelper.GetClientMutualFundTotalAmount(context, clientID);
+
+                //Get the list of items for the mutual fund
+                var mutualFundItems = await ClientHelper.GetMutualFundItems(context, clientID);
+
+                //Get the number of items for the mutual fund
+                int mutualFundNumItems = ClientHelper.GetNumItems(mutualFundItems);
+
+                //Calclulate the total amount invested for the product mutual fund
+                decimal mutualFundTotalInvested = ClientHelper.CalculateProductTotalAmountInvested(mutualFundItems);
+
+                //Calculate the profit loss for the product mutual fund
+                decimal mutualFundProfitLoss = ClientHelper.CalculateProductProfitLoss(mutualFundTotal, mutualFundTotalInvested);
+
+                //Calculate the profit loss percentage for the product mutual fund
+                decimal mutualFundProfitLossPercentage = ClientHelper.CalculateProductProfitLossPercentage(mutualFundTotal, mutualFundTotalInvested);
+
+                //Create the mutual fund product details
+                productDetail.Add
+                (
+                    new AssetsProductDetailsModel
+                    {
+                        ProductName = "Mutual Fund",
+                        NumItems = mutualFundNumItems,
+                        ProductTotalAmount = mutualFundTotal,
+                        PortfolioPercentage = 0,
+                        ProductTotalAmountInvested = 0,
+                        ProductTotalProfitLoss = mutualFundProfitLoss,
+                        ProductTotalProfitLossPercentage = mutualFundProfitLossPercentage,
+                        Items = mutualFundItems
+                    }
+                );
+
+
+                ////////// HEADER //////////
+
+
+                //Get the number of products
+                numProducts = ClientHelper.GetNumProducts(productDetail);
+
+                //Calculate the percentage for each product
+                ClientHelper.CalculatePercentageForEachProduct(productDetail);
+
+                //Calculate the percentage for each item
+                ClientHelper.CalculatePercentageForEachItem(productDetail);
+
+                //Calculate the total amount for all products
+                totalAmount = ClientHelper.CalculateAssetsTotalAmount(productDetail);
+
+                //JSON response
+                var response = new
+                {
+                    clientID = clientID,
+                    numProducts = numProducts,
+                    totalAmount = totalAmount,
+                    products = productDetail,
+                    timestamp = DateTime.UtcNow
+                };
+
+                return Results.Ok(response);
+
+            });
         }
     }
 
