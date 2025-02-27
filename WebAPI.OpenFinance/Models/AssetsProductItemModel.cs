@@ -4,10 +4,13 @@
     {
         public string ItemName { get; set; }
         public int ItemID { get; set; }
+        public int ItemQuantity { get; set; }
+        public decimal ItemLastPrice { get; set; }
+        public decimal ItemAveragePrice { get; set; }
         public decimal ItemAmount { get; set; }
         public decimal ItemAmountInvested { get; set; }
         public decimal ItemProfitLoss { get; set; }
         public decimal ItemProfitLossPercentage { get; set; }
-        public decimal PortfolioPercentage { get; set; }
+        public decimal PortfolioPercentage { get; set; } = 0;
     }
 }
