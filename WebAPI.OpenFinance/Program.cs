@@ -11,6 +11,12 @@ namespace WebAPI.OpenFinance
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Configurar o Kestrel para escutar na porta 80
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(5000);  // Configura para escutar na porta 80
+            });
+
             //DB Connection
             builder.Services.AddDbContext<OpenFinanceContext>(options =>
             {
@@ -27,11 +33,14 @@ namespace WebAPI.OpenFinance
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI();
+            //}
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             //app.UseHttpsRedirection();
 
