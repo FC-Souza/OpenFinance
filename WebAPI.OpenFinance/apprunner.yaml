@@ -1,0 +1,8 @@
+version: 1.0
+runtime: dotnetcore
+build:
+  commands:
+    - dotnet restore
+    - dotnet publish -c Release -o ./publish
+start:
+  command: dotnet ./publish/WebAPI.OpenFinance.dll
