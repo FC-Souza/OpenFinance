@@ -1,5 +1,5 @@
 version: 1.0
-runtime: dotnetcore
+runtime: dotnet
 build:
   commands:
     - dotnet restore
