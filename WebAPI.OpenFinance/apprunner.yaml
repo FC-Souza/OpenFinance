@@ -1,8 +1,0 @@
-version: 1.0
-runtime: dotnet6
-build: 
-  commands: 
-    - dotnet restore
-    - dotnet publish -c Release -o ./publish
-start: 
-  command: dotnet ./publish/WebAPI.OpenFinance.dll
