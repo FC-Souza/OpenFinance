@@ -2,3 +2,7 @@
 
 ## Iteration2
 ### feature_195_ProfileScreen
+#### userstory165_BackendProfileManagement
+##### task185_RouteReturnProfile (Merged)
+##### task189_HandleExceptionProfile (Merged)
+#### userstory165_BackendProfileManagement (Merging)
