@@ -530,10 +530,27 @@ namespace WebAPI.OpenFinance.Routes
                     return Results.BadRequest("Client not found");
                 }
 
-                //Update the client profile
-                await ClientHelper.UpdateClientProfile(context, updateClientProfile);
+                //Validate the fields to update using ValidationHelper
+                var response = await ValidationHelper.ValidateFields(context, updateClientProfile);
 
-                return Results.Ok("Client profile updated successfully");
+                if (!string.IsNullOrEmpty(response))
+                {
+                    return Results.BadRequest(response);
+                }
+
+                //Update the client profile
+                response = await ClientHelper.UpdateClientProfile(context, updateClientProfile);
+
+                if (response.Equals("Client profile updated successfully"))
+                {
+                    return Results.Ok(response);
+                }
+                else
+                {
+                    return Results.BadRequest(response);
+                }
+
+
             });
 
         }

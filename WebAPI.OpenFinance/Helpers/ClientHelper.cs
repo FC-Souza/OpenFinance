@@ -578,7 +578,7 @@ namespace WebAPI.OpenFinance.Helpers
         }
 
         //Update the client profile information. Only the fields that are not null will be updated
-        public static async Task UpdateClientProfile(OpenFinanceContext context, UpdateClientProfile clientProfile)
+        public static async Task<string> UpdateClientProfile(OpenFinanceContext context, UpdateClientProfile clientProfile)
         {
             var client = await context.Clients
                 .FirstOrDefaultAsync(c => c.clientID == clientProfile.clientID);
@@ -596,7 +596,20 @@ namespace WebAPI.OpenFinance.Helpers
                 client.clientAddress = clientProfile.clientAddress;
             }
 
-            await context.SaveChangesAsync();
+            //await context.SaveChangesAsync();
+
+            //Check if the update was executed
+            int rowsUpdated = await context.SaveChangesAsync();
+            if (rowsUpdated > 0)
+            {
+                return "Client profile updated successfully";
+            }
+            else
+            {
+                return "[Warning]. No changes were made to the client profile";
+            }
+
+            
         }
 
 
