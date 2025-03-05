@@ -4,3 +4,4 @@
 ### feature_195_ProfileScreen
 #### userstory165_BackendProfileManagement
 ##### task185_RouteReturnProfile
+##### task189_HandleExceptionProfile
