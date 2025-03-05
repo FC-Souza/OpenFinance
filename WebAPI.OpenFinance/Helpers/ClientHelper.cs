@@ -573,10 +573,31 @@ namespace WebAPI.OpenFinance.Helpers
         {
             var clientProfile = await context.Clients
                 .FirstOrDefaultAsync(c => c.clientID == clientID);
-            
+
             return clientProfile;
         }
 
+        //Update the client profile information. Only the fields that are not null will be updated
+        public static async Task UpdateClientProfile(OpenFinanceContext context, UpdateClientProfile clientProfile)
+        {
+            var client = await context.Clients
+                .FirstOrDefaultAsync(c => c.clientID == clientProfile.clientID);
+
+            if (!string.IsNullOrEmpty(clientProfile.clientName))
+            {
+                client.clientName = clientProfile.clientName;
+            }
+            if (!string.IsNullOrEmpty(clientProfile.clientEmail))
+            {
+                client.clientEmail = clientProfile.clientEmail;
+            }
+            if (!string.IsNullOrEmpty(clientProfile.clientAddress))
+            {
+                client.clientAddress = clientProfile.clientAddress;
+            }
+
+            await context.SaveChangesAsync();
+        }
 
 
 
