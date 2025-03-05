@@ -568,6 +568,15 @@ namespace WebAPI.OpenFinance.Helpers
             }
         }
 
+        //Return the client profile information
+        public static async Task<ClientsModel> GetClientProfile(OpenFinanceContext context, int clientID)
+        {
+            var clientProfile = await context.Clients
+                .FirstOrDefaultAsync(c => c.clientID == clientID);
+            
+            return clientProfile;
+        }
+
 
 
 

@@ -491,6 +491,30 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok(response);
 
             });
+
+            //GET /Clients/{clientID}/ClientProfile
+            /*
+             * Receive the ClientID
+             * Check if the client exists
+             * Get the client profile
+             * Return the client profile
+             */
+            route.MapGet("/{clientID}/ClientProfile", async (OpenFinanceContext context, int clientID) =>
+            {
+                var clientProfile = new ClientsModel();
+                
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Get the client profile
+                clientProfile = await ClientHelper.GetClientProfile(context, clientID);
+
+                return Results.Ok(clientProfile);
+            });
+
         }
     }
 
