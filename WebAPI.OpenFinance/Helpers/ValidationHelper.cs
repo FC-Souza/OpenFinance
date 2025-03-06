@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using WebAPI.OpenFinance.Data;
+using WebAPI.OpenFinance.Models;
 
 namespace WebAPI.OpenFinance.Helpers
 {
@@ -45,5 +47,37 @@ namespace WebAPI.OpenFinance.Helpers
             return address.Length >= 5;
         }
 
+        //Validate fileds before update
+        internal static async Task<string> ValidateFields(OpenFinanceContext context, UpdateClientProfile clientProfile)
+        {
+            //Validate all the new fields
+            if (!string.IsNullOrEmpty(clientProfile.clientName))
+            {
+                if (!IsValidName(clientProfile.clientName))
+                {
+                    return "Invalid name";
+                }                
+            }
+            if (!string.IsNullOrEmpty(clientProfile.clientEmail))
+            {
+                if (!IsValidEmail(clientProfile.clientEmail))
+                {
+                    return "Invalid email";
+                }
+                if (await AuthenticationHelper.CheckEmailExists(context, clientProfile.clientEmail))
+                {
+                    return "Email already exists";
+                }
+            }
+            if (!string.IsNullOrEmpty(clientProfile.clientAddress))
+            {
+                if (!IsValidAddress(clientProfile.clientAddress))
+                {
+                    return "Invalid address";
+                }
+            }
+
+            return "";
+        }
     }
 }

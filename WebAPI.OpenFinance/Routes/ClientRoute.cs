@@ -491,6 +491,68 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok(response);
 
             });
+
+            //GET /Clients/{clientID}/ClientProfile
+            /*
+             * Receive the ClientID
+             * Check if the client exists
+             * Get the client profile
+             * Return the client profile
+             */
+            route.MapGet("/{clientID}/ClientProfile", async (OpenFinanceContext context, int clientID) =>
+            {
+                var clientProfile = new ClientsModel();
+                
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Get the client profile
+                clientProfile = await ClientHelper.GetClientProfile(context, clientID);
+
+                return Results.Ok(clientProfile);
+            });
+
+            //PUT /Clients/ClientProfile
+            /*
+             * Receive a JSON with the clientID and the fields to update
+             * Check if the client exists
+             * Update the client profile
+             * Return success message
+             */
+            route.MapPatch("/ClientProfile", async (OpenFinanceContext context, UpdateClientProfile updateClientProfile) =>
+            {
+                //Check if the client exists
+                if (!await ClientHelper.CheckClientExists(context, updateClientProfile.clientID))
+                {
+                    return Results.BadRequest("Client not found");
+                }
+
+                //Validate the fields to update using ValidationHelper
+                var response = await ValidationHelper.ValidateFields(context, updateClientProfile);
+
+                if (!string.IsNullOrEmpty(response))
+                {
+                    return Results.BadRequest(response);
+                }
+
+                //Update the client profile
+                response = await ClientHelper.UpdateClientProfile(context, updateClientProfile);
+
+                if (response.Equals("Client profile updated successfully"))
+                {
+                    return Results.Ok(response);
+                }
+                else
+                {
+                    return Results.BadRequest(response);
+                }
+
+
+            });
+
         }
     }
 
