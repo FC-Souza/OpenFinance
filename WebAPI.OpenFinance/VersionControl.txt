@@ -12,4 +12,4 @@
 ### feature259_StatmentsScreen
 #### userstory176_CreateModelTablesforStatements
 ##### task178_CreateModelTablesforStatements (Merged)
-#### userstory176_CreateModelTablesforStatements (Merging)
+#### userstory176_CreateModelTablesforStatements (Mergin)
