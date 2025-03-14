@@ -1,6 +1,6 @@
 ﻿namespace WebAPI.OpenFinance.Responses
 {
-    public class ClientStatement
+    public class ClientStatementResponse
     {
         public int ClientId { get; set; }
         public List<StatementByMonth> Statements { get; set; }
