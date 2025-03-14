@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using WebAPI.OpenFinance.Data;
-using WebAPI.OpenFinance.Models;
+using WebAPI.OpenFinance.Responses;
 
 namespace WebAPI.OpenFinance.Helpers
 {

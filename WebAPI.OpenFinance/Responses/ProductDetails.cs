@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace WebAPI.OpenFinance.Models
+namespace WebAPI.OpenFinance.Responses
 {
     public class ProductDetails
     {

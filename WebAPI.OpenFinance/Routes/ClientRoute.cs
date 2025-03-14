@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WebAPI.OpenFinance.Helpers;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
+using WebAPI.OpenFinance.Responses;
 
 namespace WebAPI.OpenFinance.Routes
 {

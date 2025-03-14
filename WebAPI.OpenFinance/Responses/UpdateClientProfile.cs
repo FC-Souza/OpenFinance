@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace WebAPI.OpenFinance.Models
+namespace WebAPI.OpenFinance.Responses
 {
     public class UpdateClientProfile
     {
