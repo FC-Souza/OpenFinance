@@ -30,6 +30,13 @@ namespace WebAPI.OpenFinance.Data
         public DbSet<MutualFundModel> MutualFund { get; set; }
         public DbSet<MutualFundInfoModel> MutualFundInfo { get; set; }
 
+        //Statements tables
+        public DbSet<StatementModel> Statement { get; set; }
+        public DbSet<TransactionDirectionModel> TransactionDirection { get; set; }
+        public DbSet<TransactionTypeModel> TransactionType { get; set; }
+        public DbSet<TransactionModel> Transaction { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Default value set to 3 for the remainingLoginAttempts
