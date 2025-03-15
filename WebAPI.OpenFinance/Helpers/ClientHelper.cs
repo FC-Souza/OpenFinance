@@ -613,6 +613,8 @@ namespace WebAPI.OpenFinance.Helpers
             
         }
 
+        //Check if the client has a statement
+
 
 
 

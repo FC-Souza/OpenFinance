@@ -11,10 +11,10 @@ namespace WebAPI.OpenFinance.Models
         public int TransactionID { get; set; }
 
         [Required]
-        [Column("statement_id")]
-        public int StatementID { get; set; }
-        [ForeignKey("StatementID")]
-        public StatementModel Statement { get; set; }
+        [Column("connection_id")]
+        public int connectionId { get; set; }
+        [ForeignKey("connectionId")]
+        public ConnectionsModel Connection { get; set; }
 
         [Required]
         [Column("transaction_type_id")]
