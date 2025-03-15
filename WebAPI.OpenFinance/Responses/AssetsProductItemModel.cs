@@ -1,4 +1,4 @@
-﻿namespace WebAPI.OpenFinance.Models
+﻿namespace WebAPI.OpenFinance.Responses
 {
     public class AssetsProductItemModel
     {

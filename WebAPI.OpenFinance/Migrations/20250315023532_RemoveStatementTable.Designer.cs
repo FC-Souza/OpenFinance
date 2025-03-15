@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebAPI.OpenFinance.Data;
@@ -11,9 +12,11 @@ using WebAPI.OpenFinance.Data;
 namespace WebAPI.OpenFinance.Migrations
 {
     [DbContext(typeof(OpenFinanceContext))]
-    partial class OpenFinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20250315023532_RemoveStatementTable")]
+    partial class RemoveStatementTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -492,8 +495,6 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasIndex("TransactionTypeID");
 
-                    b.HasIndex("connectionId");
-
                     b.ToTable("transaction");
                 });
 
@@ -643,14 +644,6 @@ namespace WebAPI.OpenFinance.Migrations
                         .HasForeignKey("TransactionTypeID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("WebAPI.OpenFinance.Models.ConnectionsModel", "Connection")
-                        .WithMany()
-                        .HasForeignKey("connectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Connection");
 
                     b.Navigation("TransactionDirection");
 
