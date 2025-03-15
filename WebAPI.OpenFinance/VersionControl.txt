@@ -17,5 +17,5 @@
 #### userstory162_RouteStatements
 ##### task 168_CreateRouteStatements (Merged)
 #### userstory162_RouteStatements (Merged)
-### feature259_StatmentsScreen (Merging)
+### feature259_StatmentsScreen (Merged)
 ## iteration3
