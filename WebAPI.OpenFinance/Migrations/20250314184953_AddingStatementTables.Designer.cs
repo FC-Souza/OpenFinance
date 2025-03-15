@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebAPI.OpenFinance.Data;
@@ -11,13 +12,15 @@ using WebAPI.OpenFinance.Data;
 namespace WebAPI.OpenFinance.Migrations
 {
     [DbContext(typeof(OpenFinanceContext))]
-    partial class OpenFinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20250314184953_AddingStatementTables")]
+    partial class AddingStatementTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -331,6 +334,41 @@ namespace WebAPI.OpenFinance.Migrations
                     b.ToTable("product_types");
                 });
 
+            modelBuilder.Entity("WebAPI.OpenFinance.Models.StatementModel", b =>
+                {
+                    b.Property<int>("StatementID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("statement_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StatementID"));
+
+                    b.Property<DateTime>("LastUpdate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_update");
+
+                    b.Property<int>("StatementMonth")
+                        .HasColumnType("integer")
+                        .HasColumnName("statement_month");
+
+                    b.Property<int>("StatementYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("statement_year");
+
+                    b.Property<int>("connectionID")
+                        .HasColumnType("integer")
+                        .HasColumnName("connection_id");
+
+                    b.Property<int?>("connectionId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("StatementID");
+
+                    b.HasIndex("connectionId");
+
+                    b.ToTable("statement");
+                });
+
             modelBuilder.Entity("WebAPI.OpenFinance.Models.StockInfoModel", b =>
                 {
                     b.Property<int>("stockInfoId")
@@ -462,6 +500,10 @@ namespace WebAPI.OpenFinance.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("product_id");
 
+                    b.Property<int>("StatementID")
+                        .HasColumnType("integer")
+                        .HasColumnName("statement_id");
+
                     b.Property<decimal>("TransactionAmount")
                         .HasColumnType("numeric")
                         .HasColumnName("transaction_amount");
@@ -482,17 +524,13 @@ namespace WebAPI.OpenFinance.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("update_date");
 
-                    b.Property<int>("connectionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("connection_id");
-
                     b.HasKey("TransactionID");
+
+                    b.HasIndex("StatementID");
 
                     b.HasIndex("TransactionDirectionID");
 
                     b.HasIndex("TransactionTypeID");
-
-                    b.HasIndex("connectionId");
 
                     b.ToTable("transaction");
                 });
@@ -602,6 +640,15 @@ namespace WebAPI.OpenFinance.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("WebAPI.OpenFinance.Models.StatementModel", b =>
+                {
+                    b.HasOne("WebAPI.OpenFinance.Models.ConnectionsModel", "Connection")
+                        .WithMany()
+                        .HasForeignKey("connectionId");
+
+                    b.Navigation("Connection");
+                });
+
             modelBuilder.Entity("WebAPI.OpenFinance.Models.StockInfoModel", b =>
                 {
                     b.HasOne("WebAPI.OpenFinance.Models.ConnectionsModel", "Connection")
@@ -632,6 +679,12 @@ namespace WebAPI.OpenFinance.Migrations
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.TransactionModel", b =>
                 {
+                    b.HasOne("WebAPI.OpenFinance.Models.StatementModel", "Statement")
+                        .WithMany()
+                        .HasForeignKey("StatementID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("WebAPI.OpenFinance.Models.TransactionDirectionModel", "TransactionDirection")
                         .WithMany()
                         .HasForeignKey("TransactionDirectionID")
@@ -644,13 +697,7 @@ namespace WebAPI.OpenFinance.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebAPI.OpenFinance.Models.ConnectionsModel", "Connection")
-                        .WithMany()
-                        .HasForeignKey("connectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Connection");
+                    b.Navigation("Statement");
 
                     b.Navigation("TransactionDirection");
 

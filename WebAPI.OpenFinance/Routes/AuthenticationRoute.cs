@@ -77,8 +77,7 @@ namespace WebAPI.OpenFinance.Routes
             //Will receive a JSON with the email, password, full name and address
             //Will return a JSON with the clientID and Full Name
             //Password will be stored at client_credential
-            route.MapPost("/signup", async (OpenFinanceContext context, Signup signup)
-                =>
+            route.MapPost("/signup", async (OpenFinanceContext context, Signup signup) =>
             {
                 //Get the email, password, full name and address from the JSON
                 var email = signup.Email;

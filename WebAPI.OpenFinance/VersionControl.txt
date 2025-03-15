@@ -9,3 +9,13 @@
 ### feature_195_ProfileScreen (Merged)
 
 ## iteration3
+### feature259_StatmentsScreen
+#### userstory176_CreateModelTablesforStatements
+##### task178_CreateModelTablesforStatements (Merged)
+#### userstory176_CreateModelTablesforStatements (Merged)
+### feature259_StatmentsScreen
+#### userstory162_RouteStatements
+##### task 168_CreateRouteStatements (Merged)
+#### userstory162_RouteStatements (Merged)
+### feature259_StatmentsScreen (Merging)
+## iteration3
