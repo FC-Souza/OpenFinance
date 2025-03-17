@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebAPI.OpenFinance.Data;
@@ -11,9 +12,11 @@ using WebAPI.OpenFinance.Data;
 namespace WebAPI.OpenFinance.Migrations
 {
     [DbContext(typeof(OpenFinanceContext))]
-    partial class OpenFinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20250317203444_AddingProfitReportTable")]
+    partial class AddingProfitReportTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -341,12 +344,8 @@ namespace WebAPI.OpenFinance.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ReportID"));
 
                     b.Property<DateTime>("ReportDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("report_date");
-
-                    b.Property<DateTime>("ReportPeriod")
                         .HasColumnType("date")
-                        .HasColumnName("report_period");
+                        .HasColumnName("report_date");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric")
