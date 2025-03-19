@@ -17,7 +17,7 @@ namespace WebAPI.OpenFinance.Models
 
         [Column("product_id")]
         public int productId { get; set; }
-        [ForeignKey("product_types")]
+        [ForeignKey("productId")]
         public ProductTypesModel Product { get; set; }
 
         [Column("total_amount_invested")]

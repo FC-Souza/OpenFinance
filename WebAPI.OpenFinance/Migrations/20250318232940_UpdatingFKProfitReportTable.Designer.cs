@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebAPI.OpenFinance.Data;
@@ -11,9 +12,11 @@ using WebAPI.OpenFinance.Data;
 namespace WebAPI.OpenFinance.Migrations
 {
     [DbContext(typeof(OpenFinanceContext))]
-    partial class OpenFinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20250318232940_UpdatingFKProfitReportTable")]
+    partial class UpdatingFKProfitReportTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -297,9 +300,12 @@ namespace WebAPI.OpenFinance.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("product_id");
 
+                    b.Property<int?>("product_types")
+                        .HasColumnType("integer");
+
                     b.HasKey("MFID");
 
-                    b.HasIndex("productId");
+                    b.HasIndex("product_types");
 
                     b.ToTable("mutual_fund");
                 });
@@ -452,6 +458,9 @@ namespace WebAPI.OpenFinance.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("product_id");
 
+                    b.Property<int?>("product_types")
+                        .HasColumnType("integer");
+
                     b.Property<string>("stockName")
                         .IsRequired()
                         .HasColumnType("text")
@@ -464,7 +473,7 @@ namespace WebAPI.OpenFinance.Migrations
 
                     b.HasKey("stockId");
 
-                    b.HasIndex("productId");
+                    b.HasIndex("product_types");
 
                     b.ToTable("stock");
                 });
@@ -641,9 +650,7 @@ namespace WebAPI.OpenFinance.Migrations
                 {
                     b.HasOne("WebAPI.OpenFinance.Models.ProductTypesModel", "Product")
                         .WithMany()
-                        .HasForeignKey("productId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("product_types");
 
                     b.Navigation("Product");
                 });
@@ -690,9 +697,7 @@ namespace WebAPI.OpenFinance.Migrations
                 {
                     b.HasOne("WebAPI.OpenFinance.Models.ProductTypesModel", "Product")
                         .WithMany()
-                        .HasForeignKey("productId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("product_types");
 
                     b.Navigation("Product");
                 });
