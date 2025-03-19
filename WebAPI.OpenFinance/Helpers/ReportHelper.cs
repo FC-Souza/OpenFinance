@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using WebAPI.OpenFinance.Data;
 using WebAPI.OpenFinance.Models;
+using WebAPI.OpenFinance.Responses;
 
 namespace WebAPI.OpenFinance.Helpers
 {
@@ -164,8 +165,38 @@ namespace WebAPI.OpenFinance.Helpers
             await context.SaveChangesAsync();
         }
 
+
+        //Get the profit report for the clientID for the last 12 months
+        public static async Task<List<ProfitReportByMonth>> GetProfitReport(OpenFinanceContext context, int clientID)
+        {
+
+            //Get the connections for the clientID
+            var connection = await ClientHelper.GetClientConnectionsByClientID(context, clientID);
+
+            //Last 12 months
+            DateTime searchPeriod = DateTime.UtcNow.AddMonths(-13);
+
+
+            //Get the profit report for the clientID for the last 12 months
+            return await context.ProfitReport
+                .Where(pr => connection.Contains(pr.connectionId) && pr.ReportPeriod >= searchPeriod)
+                .GroupBy(pr => pr.ReportPeriod)
+                .OrderByDescending(g => g.Key)
+                .Select(g => new ProfitReportByMonth
+                {
+                    ReportPeriod = g.Key,
+                    //ReportPeriod = g.Key.ToString("MM-yyyy"),
+                    TotalAmountInvested = g.Sum(x => x.TotalAmountInvested),
+                    TotalAmount = g.Sum(x => x.TotalAmount),
+                    TotalProfitLoss = g.Sum(x => x.TotalProfit),
+                    TotalProfitLossPercentage = g.Sum(x => x.TotalAmountInvested) > 0 
+                        ? Math.Round((g.Sum(x => x.TotalProfit) / g.Sum(x => x.TotalAmountInvested)) * 100, 2)
+                        : 0
+                })
+                .ToListAsync();
+
+        }
+
     }
-
-
 
 }

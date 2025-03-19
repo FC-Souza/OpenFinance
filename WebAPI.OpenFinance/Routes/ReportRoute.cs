@@ -1,5 +1,6 @@
 ﻿using WebAPI.OpenFinance.Data;
 using WebAPI.OpenFinance.Helpers;
+using WebAPI.OpenFinance.Responses;
 
 namespace WebAPI.OpenFinance.Routes
 {
@@ -37,12 +38,20 @@ namespace WebAPI.OpenFinance.Routes
                     return Results.BadRequest("Client has no active connections");
                 }
 
+                //Get the profit report for the clientID
+                var reportByMonth = await ReportHelper.GetProfitReport(context, clientID);
 
 
-                var report = await ReportHelper.GetProfitReport(context, clientID);
+                var response = new ProfitReportResponse
+                {
+                    ClientID = clientID,
+                    ProfitReportByMonth = reportByMonth,
+                    Timestamp = DateTime.UtcNow
+                };
 
 
-                return Results.Ok(report);
+
+                return Results.Ok(response);
             });
         }
     }
