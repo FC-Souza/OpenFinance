@@ -48,6 +48,7 @@ namespace WebAPI.OpenFinance
             app.ClientRoutes();
             app.AuthenticationRoutes();
             app.StatementRoutes();
+            app.ReportRoutes();
 
             app.Run();
         }
