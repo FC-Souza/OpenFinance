@@ -19,7 +19,7 @@ namespace WebAPI.OpenFinance.Routes
                 return Results.Ok("Report generated");
             });
 
-            //GET /report/{reportPeriod}/ProfitReport
+            //GET /report/{clientID}/ProfitReport
             //Receive the clientID
             //Will return the profit report for the clientID for the last 12 months
             //Return a JSON with the client's profit report. Showing all the profit/loss for a clientID
@@ -50,6 +50,27 @@ namespace WebAPI.OpenFinance.Routes
                 };
 
 
+
+                return Results.Ok(response);
+            });
+
+            //GET /report/BenchmarkIndex
+            //Will return the benchmark index for the last 12 months
+            //Return a JSON with the benchmark index for the last 12 months
+            route.MapGet("/BenchmarkIndex", async (OpenFinanceContext context) =>
+            {
+                var benchmarkIndexes = await ReportHelper.GetBenchmarkIndex(context);
+
+                if (benchmarkIndexes == null)
+                {
+                    return Results.BadRequest("No benchmark index found for the period");
+                }
+
+                var response = new BenchmarkIndexResponse
+                {
+                    BenchmarkIndexes = benchmarkIndexes,
+                    Timestamp = DateTime.UtcNow
+                };
 
                 return Results.Ok(response);
             });

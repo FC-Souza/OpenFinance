@@ -197,6 +197,26 @@ namespace WebAPI.OpenFinance.Helpers
 
         }
 
+        //Get the benchmark index for the last 12 months
+        public static async Task<List<BenchmarkIndexes>> GetBenchmarkIndex(OpenFinanceContext context)
+        {
+            //Last 12 months
+            DateTime searchPeriod = DateTime.UtcNow.AddMonths(-13);
+
+            //Get the benchmark index for the last 12 months
+            return await context.BenchmarkIndex
+                .Where(bi => bi.BenchmarkPeriod >= searchPeriod)
+                .OrderByDescending(bi => bi.BenchmarkPeriod)
+                .Select(bi => new BenchmarkIndexes
+                {
+                    BenchmarkPeriod = bi.BenchmarkPeriod,
+                    CPI = bi.CPI,
+                    SPTSX = bi.SPTSX,
+                    CBPR = bi.CBPR
+                })
+                .ToListAsync();
+        }
+
     }
 
 }
