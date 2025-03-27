@@ -35,6 +35,10 @@ namespace WebAPI.OpenFinance.Data
         public DbSet<TransactionTypeModel> TransactionType { get; set; }
         public DbSet<TransactionModel> Transaction { get; set; }
 
+        //Reports tables
+        public DbSet<ProfitReportModel> ProfitReport { get; set; }
+        public DbSet<BenchmarkIndexModel> BenchmarkIndex { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
