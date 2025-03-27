@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebAPI.OpenFinance.Data;
@@ -11,9 +12,11 @@ using WebAPI.OpenFinance.Data;
 namespace WebAPI.OpenFinance.Migrations
 {
     [DbContext(typeof(OpenFinanceContext))]
-    partial class OpenFinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20250318233229_UpdatingFKproductId")]
+    partial class UpdatingFKproductId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,36 +42,6 @@ namespace WebAPI.OpenFinance.Migrations
                     b.HasKey("bankID");
 
                     b.ToTable("banks");
-                });
-
-            modelBuilder.Entity("WebAPI.OpenFinance.Models.BenchmarkIndexModel", b =>
-                {
-                    b.Property<int>("BenchmarkID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("benchmark_id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BenchmarkID"));
-
-                    b.Property<DateTime>("BenchmarkPeriod")
-                        .HasColumnType("date")
-                        .HasColumnName("benchmark_period");
-
-                    b.Property<decimal>("CBPR")
-                        .HasColumnType("decimal(5,2)")
-                        .HasColumnName("cbpr");
-
-                    b.Property<decimal>("CPI")
-                        .HasColumnType("decimal(5,2)")
-                        .HasColumnName("cpi");
-
-                    b.Property<decimal>("SPTSX")
-                        .HasColumnType("decimal(5,2)")
-                        .HasColumnName("sp_tsx");
-
-                    b.HasKey("BenchmarkID");
-
-                    b.ToTable("benchmark_index");
                 });
 
             modelBuilder.Entity("WebAPI.OpenFinance.Models.CashInfoModel", b =>

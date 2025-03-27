@@ -36,6 +36,18 @@ namespace WebAPI.OpenFinance.Helpers
             return await context.Connections.AnyAsync(c => c.clientID == clientID && c.isActive);
         }
 
+        //Get all the active clientIDs with active connections
+        public static async Task<List<int>> GetActiveClientIDs(OpenFinanceContext context)
+        {
+            var activeClientIDs = await context.Connections
+                .Where(c => c.isActive)
+                .Select(c => c.clientID)
+                .Distinct()
+                .ToListAsync();
+            return activeClientIDs;
+        }
+
+
         //Calculate the percentage for each product
         public static void CalculatePercentageForEachProduct(List<ProductDetails> productDetails)
         {
