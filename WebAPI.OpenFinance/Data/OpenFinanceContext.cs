@@ -37,6 +37,7 @@ namespace WebAPI.OpenFinance.Data
 
         //Reports tables
         public DbSet<ProfitReportModel> ProfitReport { get; set; }
+        public DbSet<BenchmarkIndexModel> BenchmarkIndex { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
