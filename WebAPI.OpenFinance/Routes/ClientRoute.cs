@@ -49,6 +49,8 @@ namespace WebAPI.OpenFinance.Routes
 
                 //Add the cashTotal to the totalAmount
                 totalAmount += cashTotal;
+                productTotals.Add(new { product = "Cash", total = cashTotal });
+
 
                 //Sum StockInfo for all connections
                 /*
