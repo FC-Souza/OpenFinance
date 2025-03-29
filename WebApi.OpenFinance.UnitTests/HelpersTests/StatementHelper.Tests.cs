@@ -2,7 +2,7 @@
 using WebAPI.OpenFinance.Helpers;
 using WebAPI.OpenFinance.Models;
 using WebAPI.OpenFinance.Responses;
-using WebApi.OpenFinance.UnitTests.Helpers;
+using WebApi.OpenFinance.UnitTests;
 using System;
 using System.Collections.Generic;
 using System.Linq;

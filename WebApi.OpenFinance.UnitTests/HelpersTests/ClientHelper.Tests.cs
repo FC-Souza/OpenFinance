@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using WebAPI.OpenFinance.Helpers;
 using WebAPI.OpenFinance.Models;
-using WebApi.OpenFinance.UnitTests.Helpers;
+using WebApi.OpenFinance.UnitTests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
